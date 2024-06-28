@@ -5,7 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import { configModules, configValidationSchema } from './config';
-import { pinoConfig } from './config/logger.config';
+import { pinoConfig } from './config/pino.config';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,4 +21,4 @@ import { pinoConfig } from './config/logger.config';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
