@@ -21,4 +21,4 @@ import { pinoConfig } from './config/pino.config';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
