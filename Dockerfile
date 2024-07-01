@@ -28,4 +28,4 @@ FROM node:20-alpine AS test
 WORKDIR /app
 COPY --from=builder /app .
 RUN npm install --only=development
-CMD ["npm", "run", "test"]
+CMD [ "npx", "jest",  "--coverage" ]
