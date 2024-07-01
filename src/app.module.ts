@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import { configModules, configValidationSchema } from './config';
 import { pinoConfig } from './config/pino.config';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -17,6 +18,7 @@ import { pinoConfig } from './config/pino.config';
       inject: [ConfigService],
       useFactory: pinoConfig,
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
