@@ -1,11 +1,18 @@
----
 name: CI Pipeline
 
-on:
-  push:
+on: 
+  workflow_call:
+    secrets:
+      CC_TEST_REPORTER_ID:
+        required: true
 
 jobs:
-  ci:
-    uses: TogetherCrew/operations/.github/workflows/ci.yml@main
-    secrets:
-      CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+    lint:
+      uses: ./.github/workflows/lint.yml
+    test:
+      uses: ./.github/workflows/test.yml
+      secrets:
+        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+    build-push:
+      needs: [lint, test]
+      uses: ./.github/workflows/build-push.yml
