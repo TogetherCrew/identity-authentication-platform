@@ -18,7 +18,7 @@ CMD ["npm", "run", "start:dev"]
 # Stage 3: Production
 FROM node:20-alpine AS production
 WORKDIR /app
-# COPY --from=builder /app .
+COPY --from=builder /app .
 COPY . .
 RUN npm install --only=production
 EXPOSE 3000
