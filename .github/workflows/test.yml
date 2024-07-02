@@ -2,10 +2,6 @@ name: Test
 
 on:
   workflow_call:
-    inputs:
-      CC_TEST_REPORTER_ID:
-        required: true
-        type: string
 
 jobs:
   test:
@@ -20,6 +16,6 @@ jobs:
       - run: npm run test
       - uses: paambaati/codeclimate-action@v5.0.0
         env:
-          CC_TEST_REPORTER_ID: ${{ inputs.CC_TEST_REPORTER_ID }}
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
           coverageCommand: npm run test:cov

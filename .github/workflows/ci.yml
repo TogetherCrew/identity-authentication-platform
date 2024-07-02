@@ -12,13 +12,9 @@ env:
 jobs:
   lint:
     uses: ./.github/workflows/lint.yml
-    with:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     uses: ./.github/workflows/test.yml
-    with:
-      CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
   build-push:
     needs: [test, lint]
