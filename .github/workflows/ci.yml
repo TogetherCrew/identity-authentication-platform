@@ -19,7 +19,3 @@ jobs:
   build-push:
     needs: [test, lint]
     uses: ./.github/workflows/build-push.yml
-    with:
-      REGISTRY: ${{ env.REGISTRY }}
-      IMAGE_NAME: ${{ env.IMAGE_NAME }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
