@@ -1,12 +1,12 @@
----
-name: Publish
+name: Production CI/CD Pipeline
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
 
 jobs:
   ci:
-    uses: TogetherCrew/operations/.github/workflows/publish.ts.yml@main
+    uses: TogetherCrew/operations/.github/workflows/ci.yml@main
     secrets:
-      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+      CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
