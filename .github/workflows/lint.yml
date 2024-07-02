@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: super-linter/super-linter@v5.0.0
+      - uses: super-linter/super-linter@v5
         env:
           GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
           TYPESCRIPT_DEFAULT_STYLE: prettier

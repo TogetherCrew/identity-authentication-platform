@@ -21,8 +21,8 @@ jobs:
       CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
   build-push:
-    needs: [test,lint]
-    uses: ./.github/workflows/build-push.yml
+    needs: [test, lint]
+    uses: ./.github/workflows/build-publish.yml
     with:
       REGISTRY: ${{ env.REGISTRY }}
       IMAGE_NAME: ${{ env.IMAGE_NAME }}

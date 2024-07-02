@@ -2,31 +2,35 @@ name: Build and Push Image
 
 on: 
   workflow_call:
-  
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  
+    inputs:
+      REGISTRY:
+        required: true
+        type: string
+      IMAGE_NAME:
+        required: true
+        type: string
+      GITHUB_TOKEN:
+        required: true
+        type: string
+
 jobs:
   build-push:
-    name: Build + Push Image
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ${{ inputs.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ inputs.GITHUB_TOKEN }}
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ inputs.REGISTRY }}/${{ inputs.IMAGE_NAME }}
       - uses: docker/build-push-action@v5
         with:
           context: .
