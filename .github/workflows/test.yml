@@ -1,28 +1,17 @@
-on: 
-  workflow_call:
-    secrets:
-      CC_TEST_REPORTER_ID:
-        required: true
-  
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-
-#     permissions:
-#       pages: write      # to deploy to Pages
-#       id-token: write   # to verify the deployment originates from an appropriate source
-
-#     environment:
-#       name: github-pages
-#       url: ${{ steps.deployment.outputs.page_url }}
-    
     steps:
       - uses: actions/checkout@v4
       - run: docker compose -f docker-compose.test.yml up --exit-code-from app
       - uses: paambaati/codeclimate-action@v5.0.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-        with:
-          coverageCommand: npm run coverage
-          debug: true
