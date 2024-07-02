@@ -1,6 +1,6 @@
 name: Build and Push Image
 
-on: 
+on:
   workflow_call:
     inputs:
       REGISTRY:
