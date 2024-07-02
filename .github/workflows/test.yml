@@ -1,17 +1,25 @@
 name: Test
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      CC_TEST_REPORTER_ID:
+        required: true
+        type: string
 
 jobs:
   test:
-    name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: docker compose -f docker-compose.test.yml up --exit-code-from app
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm install --force
+      - run: npm run test
       - uses: paambaati/codeclimate-action@v5.0.0
         env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+          CC_TEST_REPORTER_ID: ${{ inputs.CC_TEST_REPORTER_ID }}
+        with:
+          coverageCommand: npm run test:cov
