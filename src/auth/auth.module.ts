@@ -1,9 +1,18 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
+import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
-  controllers: [AuthController],
+  imports: [
+    JwtModule.registerAsync({
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.secret'),
+      }),
+      inject: [ConfigService],
+    }),
+  ],
   providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}
