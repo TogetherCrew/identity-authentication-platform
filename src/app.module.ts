@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
     ConfigModule.forRoot({
       load: configModules,
       validationSchema: configValidationSchema,
+      isGlobal: true,
     }),
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
