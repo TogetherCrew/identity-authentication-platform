@@ -1,27 +1,14 @@
 // test/auth/auth-core.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthCoreService } from './auth.core.service';
-import { ConfigService } from '@nestjs/config';
+import { OAUTH_URLS } from './constants/oAuth.constants';
 
 describe('AuthCoreService', () => {
   let service: AuthCoreService;
-  const mockBaseUrl = 'https://auth.example.com';
-  const mockClientId = 'client-id';
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AuthCoreService,
-        {
-          provide: ConfigService,
-          useValue: {
-            get: jest.fn((key: string) => {
-              if (key === 'discord.authUrl') return mockBaseUrl;
-              if (key === 'discord.clientId') return mockClientId;
-            }),
-          },
-        },
-      ],
+      providers: [AuthCoreService],
     }).compile();
 
     service = module.get<AuthCoreService>(AuthCoreService);
@@ -59,13 +46,14 @@ describe('AuthCoreService', () => {
   describe('generateOAuthUrl', () => {
     it('should construct a valid OAuth URL with provided parameters', () => {
       const params = {
+        clientId: '1234',
         redirect_uri: 'https://myapp.com/callback',
         response_type: 'code',
         scope: 'email',
         state: 'state123',
       };
       const url = service.generateOAuthUrl('discord', params);
-      expect(url).toBe(`${mockBaseUrl}?client_id=${mockClientId}&redirect_uri=${encodeURIComponent(params.redirect_uri)}&response_type=code&scope=email&state=state123`);
+      expect(url).toBe(`${OAUTH_URLS['discord']}?${new URLSearchParams(params).toString()}`);
     });
   });
 
