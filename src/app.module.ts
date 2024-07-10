@@ -7,6 +7,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { configModules, configValidationSchema } from './config';
 import { pinoConfig } from './config/pino.config';
 import { AuthModule } from './auth/auth.module';
+import { AuthDiscordModule } from './auth-discord/auth-discord.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,6 +21,7 @@ import { AuthModule } from './auth/auth.module';
       useFactory: pinoConfig,
     }),
     AuthModule,
+    AuthDiscordModule,
   ],
   controllers: [AppController],
   providers: [AppService],
