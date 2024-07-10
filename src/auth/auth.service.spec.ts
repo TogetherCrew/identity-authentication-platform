@@ -1,7 +1,7 @@
 // test/auth/auth.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { AuthService } from '../../src/auth/auth.service';
+import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
 import * as moment from 'moment';
 import { JwtPayload } from './types/jwt-payload.type';
