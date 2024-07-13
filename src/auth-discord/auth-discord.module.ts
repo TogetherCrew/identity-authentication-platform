@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AuthDiscordService } from './auth-discord.service';
+import { AuthDiscordController } from './auth-discord.controller';
 import { AuthModule } from 'src/auth/auth.module';
-import { HttpModule } from '@nestjs/axios';
+import { UtilsModule } from '../utils/utils.module';
 
 @Module({
-  imports: [AuthModule, HttpModule],
-  providers: [AuthDiscordService],
+  imports: [AuthModule, UtilsModule],
+  providers: [],
+  controllers: [AuthDiscordController],
 })
 export class AuthDiscordModule {}

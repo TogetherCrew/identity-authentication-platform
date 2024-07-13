@@ -1,25 +1,35 @@
-// import { Controller, Get, Query, Redirect, Req, Res } from '@nestjs/common';
-// import { AuthDiscordService } from './auth-discord.service';
-// import { Request, Response } from 'express';
+import { Controller, Get, Query, Redirect, HttpException, HttpStatus, Injectable, Session } from '@nestjs/common';
+import { OAuthService } from '../auth/oAuth.service';
+import { AuthService } from '../auth/auth.service';
+import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto';
+import { CryptoUtilsService } from '../utils/crypto-utils.service';
+import { OAUTH_PROVIDERS } from '../auth/constants/oAuth.constants';
 
-// @Controller('auth-discord')
-// export class AuthDiscordController {
-//   constructor(private authDiscordService: AuthDiscordService) {}
+@Injectable()
+@Controller(OAUTH_PROVIDERS.DISCORD)
+export class AuthDiscordController {
+  constructor(
+    private readonly oAuthService: OAuthService,
+    private readonly authService: AuthService,
+    private readonly cryptoService: CryptoUtilsService,
+  ) {}
 
-//   @Get('/authenticate')
-//   @Redirect()
-//   redirectToDiscordAuth() {
-//     const url = this.authDiscordService.redirectToDiscord();
-//     return { url: url };
-//   }
+  @Get('authenticate')
+  @Redirect()
+  redirectToDiscord(@Session() session: any) {
+    const state = this.cryptoService.generateState();
+    const url = this.oAuthService.generateRedirectUrl(OAUTH_PROVIDERS.DISCORD, state);
+    session.state = state;
+    return { url, statusCode: HttpStatus.FOUND };
+  }
 
-//   @Get('/authenticate/callback')
-//   async handleDiscordCallback(@Query('code') code: string, @Res() res: Response) {
-//     try {
-//       const jwt = await this.authDiscordService.handleOAuth2Callback(code);
-//       res.redirect(`https://your-frontend.com?token=${jwt}`); // Redirect user to the frontend with the JWT
-//     } catch (error) {
-//       res.status(401).send('Authentication failed');
-//     }
-//   }
-// }
+  @Get('authenticate/callback')
+  async handleOAuthCallback(@Query() { code, state }: HandleOAuthCallback, @Session() session: any) {
+    if (!this.cryptoService.validateState(state, session.state)) {
+      throw new HttpException('Invalid state', HttpStatus.FORBIDDEN);
+    }
+    const userInfo = await this.oAuthService.handleOAuth2Callback(OAUTH_PROVIDERS.DISCORD, code);
+    const jwt = await this.authService.generateJwt(userInfo.id, OAUTH_PROVIDERS.DISCORD);
+    return { jwt };
+  }
+}
