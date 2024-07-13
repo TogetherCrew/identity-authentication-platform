@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { LoggerModule } from 'nestjs-pino';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-import { ConfigService } from '@nestjs/config';
-import { LoggerModule } from 'nestjs-pino';
-import { configModules, configValidationSchema } from './config';
-import { pinoConfig } from './config/pino.config';
 import { AuthModule } from './auth/auth.module';
 import { AuthDiscordModule } from './auth-discord/auth-discord.module';
+
+import { configModules, configValidationSchema } from './config';
+import { pinoConfig } from './config/pino.config';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
