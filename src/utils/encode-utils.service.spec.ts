@@ -4,7 +4,7 @@ import { EncodeUtilsService } from './encode-utils.service';
 
 describe('EncodeUtilsService', () => {
   let service: EncodeUtilsService;
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [EncodeUtilsService],
     }).compile();

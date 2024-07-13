@@ -8,7 +8,7 @@ import { AxiosResponse } from 'axios';
 
 describe('OAuthService', () => {
   let service: OAuthService;
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OAuthService,

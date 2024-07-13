@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { AuthDiscordModule } from './auth-discord/auth-discord.module';
+import { AuthGoogleModule } from './auth-google/auth-google.module';
 
 import { configModules, configValidationSchema } from './config';
 import { pinoConfig } from './config/pino.config';
@@ -24,6 +25,7 @@ import { pinoConfig } from './config/pino.config';
     }),
     AuthModule,
     AuthDiscordModule,
+    AuthGoogleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
