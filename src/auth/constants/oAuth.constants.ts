@@ -10,8 +10,3 @@ export const OAUTH_URLS = {
         userInfoUrl: 'https://discord.com/api/users/@me',
     },
 }
-
-export const OAUTH_PROVIDERS = {
-    DISCORD: 'discord',
-    GOOGLE: 'google',
-}

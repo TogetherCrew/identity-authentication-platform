@@ -5,6 +5,7 @@ import { OAuthService } from '../auth/oAuth.service'
 import { AuthService } from '../auth/auth.service'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { HttpException, HttpStatus } from '@nestjs/common'
+import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 
 describe('AuthDiscordController', () => {
     let controller: AuthDiscordController
@@ -54,7 +55,7 @@ describe('AuthDiscordController', () => {
             expect(mockSession.state).toEqual('mock-state')
             expect(mockCryptoService.generateState).toHaveBeenCalled()
             expect(mockOAuthService.generateRedirectUrl).toHaveBeenCalledWith(
-                'discord',
+                AUTH_PROVIDERS.DISCORD,
                 'mock-state'
             )
         })

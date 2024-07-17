@@ -12,10 +12,10 @@ import { OAuthService } from '../auth/oAuth.service'
 import { AuthService } from '../auth/auth.service'
 import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
-import { OAUTH_PROVIDERS } from '../auth/constants/oAuth.constants'
+import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 
 @Injectable()
-@Controller(OAUTH_PROVIDERS.GOOGLE)
+@Controller(AUTH_PROVIDERS.GOOGLE)
 export class AuthGoogleController {
     constructor(
         private readonly oAuthService: OAuthService,
@@ -28,7 +28,7 @@ export class AuthGoogleController {
     redirectToGoogle(@Session() session: any) {
         const state = this.cryptoService.generateState()
         const url = this.oAuthService.generateRedirectUrl(
-            OAUTH_PROVIDERS.GOOGLE,
+            AUTH_PROVIDERS.GOOGLE,
             state
         )
         session.state = state
@@ -44,12 +44,12 @@ export class AuthGoogleController {
             throw new HttpException('Invalid state', HttpStatus.FORBIDDEN)
         }
         const userInfo = await this.oAuthService.handleOAuth2Callback(
-            OAUTH_PROVIDERS.GOOGLE,
+            AUTH_PROVIDERS.GOOGLE,
             code
         )
         const jwt = await this.authService.generateJwt(
             userInfo.id,
-            OAUTH_PROVIDERS.GOOGLE
+            AUTH_PROVIDERS.GOOGLE
         )
         return { jwt }
     }
