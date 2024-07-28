@@ -1,53 +1,91 @@
 import { Injectable } from '@nestjs/common'
-// import { ConfigService } from '@nestjs/config'
-// import { EAS } from '@ethereum-attestation-service/eas-sdk'
-// import { ViemService } from 'src/utils/viem.service'
+import { ConfigService } from '@nestjs/config'
+import { ViemService } from '../utils/viem.service'
 import {
     EAS_SEPOLIA_CONTRACT_ABI,
     EAS_SEPOLIA_CONTRACT_ADDRESS,
 } from './constants/sepolia'
-import { Client, createPublicClient, getContract, http } from 'viem'
-import { sepolia } from 'viem/chains'
-// import {
-//     EAS_SEPOLIA_CONTRACT_ADDRESS,
-//     EAS_SEPOLIA_CONTRACT_ABI,
-// } from './constants/sepolia'
+import {
+    http,
+    getContract,
+    Client,
+    createPublicClient,
+    createWalletClient,
+    encodeAbiParameters,
+    EncodeAbiParametersReturnType,
+} from 'viem'
+import { privateKeyToAccount, Account } from 'viem/accounts'
+
+privateKeyToAccount
+
 @Injectable()
 export class EasService {
-    public readonly eas: any
-    private signer: any
+    private eas: any
+    private publicClient: any
+    private walletClient: any
+    private attester: Account
+    constructor(
+        private readonly viemService: ViemService,
+        private readonly configService: ConfigService
+    ) {
+        this.attester = privateKeyToAccount(
+            this.configService.get<string>('wallet.privateKey') as '0x${string}'
+        )
+    }
 
-    constructor() {
-        // private readonly viemService: ViemService // private readonly configService: ConfigService,
-        // const publicClient: Client = viemService.getPublicClient()
-        const publicClient = createPublicClient({
-            chain: sepolia,
+    setPublicClient(chainName: string) {
+        const chain = this.viemService.stringToChain(chainName)
+        this.publicClient = createPublicClient({
+            chain,
             transport: http(),
         })
-
+    }
+    setWalletClient(chainName: string) {
+        const chain = this.viemService.stringToChain(chainName)
+        this.walletClient = createWalletClient({
+            account: this.attester,
+            chain,
+            transport: http(),
+        })
+    }
+    setEas() {
         this.eas = getContract({
             address: EAS_SEPOLIA_CONTRACT_ADDRESS,
             abi: EAS_SEPOLIA_CONTRACT_ABI,
-            client: publicClient as Client<any, any, any>,
+            client: this.publicClient as Client<any, any, any>,
         })
-
-        // const chain = viemService.stringToChain('sepolia')
-        // const transport = viemService.getTransportByChain(chain)
-        // const publicClient = viemService.getPublicClient(chain, transport)
-        // const eas = viemService.getContractByClient(
-        //     EAS_SEPOLIA_CONTRACT_ADDRESS,
-        //     EAS_SEPOLIA_CONTRACT_ABI,
-        //     publicClient
-        // )
     }
-
     async getDomain() {
-        const domain = {
+        return {
             name: 'EAS',
             version: await this.eas.read.VERSION(),
-            chainId: sepolia.id, // TODO: publicClient.getChainId()
+            chainId: this.publicClient.getChainId(),
             verifyingContract: this.eas.address,
         }
-        return domain
+    }
+
+    async getNounce() {
+        return await this.eas.read.getNonce([this.attester.address])
+    }
+
+    getEncodeAbiParameters(
+        types: Array<object>,
+        params: never
+    ): EncodeAbiParametersReturnType {
+        return encodeAbiParameters(types, params)
+    }
+
+    async getSignatureFromSignTypeData(
+        domain: object,
+        types: Record<string, unknown>,
+        primaryType: string,
+        message: Record<string, unknown>
+    ) {
+        await this.attester.signTypedData({
+            domain,
+            types,
+            primaryType,
+            message,
+        })
     }
 }

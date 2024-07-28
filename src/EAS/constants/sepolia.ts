@@ -1,4 +1,14 @@
 import { Abi } from 'viem'
+
+export const EAS_SEPOLIA_USER_SCHEMA_UUID =
+    '0x921f5c7f40e55ff97237315d24d6c3be8d6d6a7e558bd4b38adb0efdcf1d8877'
+
+export const EAS_SEPOLIA_USER_SCHEMA_TYPES = [
+    { name: 'hash', type: 'string' },
+    { name: 'provider', type: 'string' },
+    { name: 'payload', type: 'string' },
+]
+;('0x921f5c7f40e55ff97237315d24d6c3be8d6d6a7e558bd4b38adb0efdcf1d8877')
 export const EAS_SEPOLIA_CONTRACT_ADDRESS =
     '0xC2679fBD37d54388Ce493F1DB75320D236e1815e'
 export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
