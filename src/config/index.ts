@@ -9,7 +9,7 @@ import authConfig, { authConfigSchema } from '../auth/config/auth.config'
 import appConfig, { appConfigSchema } from './app.config'
 import loggerConfig, { loggerConfigSchema } from './logger.config'
 import walletConfig, { walletConfigSchema } from './wallet.config'
-
+import easConfig, { easConfigSchema } from '../eas/config/eas.config'
 export const configModules = [
     appConfig,
     googleConfig,
@@ -17,6 +17,7 @@ export const configModules = [
     loggerConfig,
     authConfig,
     walletConfig,
+    easConfig,
 ]
 
 export const configValidationSchema = Joi.object({
@@ -28,4 +29,5 @@ export const configValidationSchema = Joi.object({
     ...loggerConfigSchema,
     ...loggerConfigSchema,
     ...walletConfigSchema,
+    ...easConfigSchema,
 })
