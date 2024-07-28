@@ -16,8 +16,6 @@ import {
 } from 'viem'
 import { privateKeyToAccount, Account } from 'viem/accounts'
 
-privateKeyToAccount
-
 @Injectable()
 export class EasService {
     private eas: any
