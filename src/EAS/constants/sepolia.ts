@@ -13,106 +13,26 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
         stateMutability: 'nonpayable',
         type: 'constructor',
     },
-    {
-        inputs: [],
-        name: 'AccessDenied',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'AlreadyRevoked',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'AlreadyRevokedOffchain',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'AlreadyTimestamped',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InsufficientValue',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidAttestation',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidAttestations',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidExpirationTime',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidLength',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidOffset',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidRegistry',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidRevocation',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidRevocations',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidSchema',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidSignature',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'InvalidVerifier',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'Irrevocable',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'NotFound',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'NotPayable',
-        type: 'error',
-    },
-    {
-        inputs: [],
-        name: 'WrongSchema',
-        type: 'error',
-    },
+    { inputs: [], name: 'AccessDenied', type: 'error' },
+    { inputs: [], name: 'AlreadyRevoked', type: 'error' },
+    { inputs: [], name: 'AlreadyRevokedOffchain', type: 'error' },
+    { inputs: [], name: 'AlreadyTimestamped', type: 'error' },
+    { inputs: [], name: 'InsufficientValue', type: 'error' },
+    { inputs: [], name: 'InvalidAttestation', type: 'error' },
+    { inputs: [], name: 'InvalidAttestations', type: 'error' },
+    { inputs: [], name: 'InvalidExpirationTime', type: 'error' },
+    { inputs: [], name: 'InvalidLength', type: 'error' },
+    { inputs: [], name: 'InvalidOffset', type: 'error' },
+    { inputs: [], name: 'InvalidRegistry', type: 'error' },
+    { inputs: [], name: 'InvalidRevocation', type: 'error' },
+    { inputs: [], name: 'InvalidRevocations', type: 'error' },
+    { inputs: [], name: 'InvalidSchema', type: 'error' },
+    { inputs: [], name: 'InvalidSignature', type: 'error' },
+    { inputs: [], name: 'InvalidVerifier', type: 'error' },
+    { inputs: [], name: 'Irrevocable', type: 'error' },
+    { inputs: [], name: 'NotFound', type: 'error' },
+    { inputs: [], name: 'NotPayable', type: 'error' },
+    { inputs: [], name: 'WrongSchema', type: 'error' },
     {
         anonymous: false,
         inputs: [
@@ -222,13 +142,7 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
     {
         inputs: [],
         name: 'VERSION',
-        outputs: [
-            {
-                internalType: 'string',
-                name: '',
-                type: 'string',
-            },
-        ],
+        outputs: [{ internalType: 'string', name: '', type: 'string' }],
         stateMutability: 'view',
         type: 'function',
     },
@@ -285,13 +199,7 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
             },
         ],
         name: 'attest',
-        outputs: [
-            {
-                internalType: 'bytes32',
-                name: '',
-                type: 'bytes32',
-            },
-        ],
+        outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
         stateMutability: 'payable',
         type: 'function',
     },
@@ -343,11 +251,7 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
                     },
                     {
                         components: [
-                            {
-                                internalType: 'uint8',
-                                name: 'v',
-                                type: 'uint8',
-                            },
+                            { internalType: 'uint8', name: 'v', type: 'uint8' },
                             {
                                 internalType: 'bytes32',
                                 name: 'r',
@@ -375,56 +279,30 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
             },
         ],
         name: 'attestByDelegation',
-        outputs: [
-            {
-                internalType: 'bytes32',
-                name: '',
-                type: 'bytes32',
-            },
-        ],
+        outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
         stateMutability: 'payable',
         type: 'function',
     },
     {
         inputs: [],
         name: 'getAttestTypeHash',
-        outputs: [
-            {
-                internalType: 'bytes32',
-                name: '',
-                type: 'bytes32',
-            },
-        ],
+        outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
         stateMutability: 'pure',
         type: 'function',
     },
     {
-        inputs: [
-            {
-                internalType: 'bytes32',
-                name: 'uid',
-                type: 'bytes32',
-            },
-        ],
+        inputs: [{ internalType: 'bytes32', name: 'uid', type: 'bytes32' }],
         name: 'getAttestation',
         outputs: [
             {
                 components: [
-                    {
-                        internalType: 'bytes32',
-                        name: 'uid',
-                        type: 'bytes32',
-                    },
+                    { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
                     {
                         internalType: 'bytes32',
                         name: 'schema',
                         type: 'bytes32',
                     },
-                    {
-                        internalType: 'uint64',
-                        name: 'time',
-                        type: 'uint64',
-                    },
+                    { internalType: 'uint64', name: 'time', type: 'uint64' },
                     {
                         internalType: 'uint64',
                         name: 'expirationTime',
@@ -450,16 +328,8 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
                         name: 'attester',
                         type: 'address',
                     },
-                    {
-                        internalType: 'bool',
-                        name: 'revocable',
-                        type: 'bool',
-                    },
-                    {
-                        internalType: 'bytes',
-                        name: 'data',
-                        type: 'bytes',
-                    },
+                    { internalType: 'bool', name: 'revocable', type: 'bool' },
+                    { internalType: 'bytes', name: 'data', type: 'bytes' },
                 ],
                 internalType: 'struct Attestation',
                 name: '',
@@ -472,69 +342,31 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
     {
         inputs: [],
         name: 'getDomainSeparator',
-        outputs: [
-            {
-                internalType: 'bytes32',
-                name: '',
-                type: 'bytes32',
-            },
-        ],
+        outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
-        inputs: [
-            {
-                internalType: 'address',
-                name: 'account',
-                type: 'address',
-            },
-        ],
+        inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
         name: 'getNonce',
-        outputs: [
-            {
-                internalType: 'uint256',
-                name: '',
-                type: 'uint256',
-            },
-        ],
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
         inputs: [
-            {
-                internalType: 'address',
-                name: 'revoker',
-                type: 'address',
-            },
-            {
-                internalType: 'bytes32',
-                name: 'data',
-                type: 'bytes32',
-            },
+            { internalType: 'address', name: 'revoker', type: 'address' },
+            { internalType: 'bytes32', name: 'data', type: 'bytes32' },
         ],
         name: 'getRevokeOffchain',
-        outputs: [
-            {
-                internalType: 'uint64',
-                name: '',
-                type: 'uint64',
-            },
-        ],
+        outputs: [{ internalType: 'uint64', name: '', type: 'uint64' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
         inputs: [],
         name: 'getRevokeTypeHash',
-        outputs: [
-            {
-                internalType: 'bytes32',
-                name: '',
-                type: 'bytes32',
-            },
-        ],
+        outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
         stateMutability: 'pure',
         type: 'function',
     },
@@ -552,40 +384,16 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
         type: 'function',
     },
     {
-        inputs: [
-            {
-                internalType: 'bytes32',
-                name: 'data',
-                type: 'bytes32',
-            },
-        ],
+        inputs: [{ internalType: 'bytes32', name: 'data', type: 'bytes32' }],
         name: 'getTimestamp',
-        outputs: [
-            {
-                internalType: 'uint64',
-                name: '',
-                type: 'uint64',
-            },
-        ],
+        outputs: [{ internalType: 'uint64', name: '', type: 'uint64' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
-        inputs: [
-            {
-                internalType: 'bytes32',
-                name: 'uid',
-                type: 'bytes32',
-            },
-        ],
+        inputs: [{ internalType: 'bytes32', name: 'uid', type: 'bytes32' }],
         name: 'isAttestationValid',
-        outputs: [
-            {
-                internalType: 'bool',
-                name: '',
-                type: 'bool',
-            },
-        ],
+        outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
         stateMutability: 'view',
         type: 'function',
     },
@@ -642,13 +450,7 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
             },
         ],
         name: 'multiAttest',
-        outputs: [
-            {
-                internalType: 'bytes32[]',
-                name: '',
-                type: 'bytes32[]',
-            },
-        ],
+        outputs: [{ internalType: 'bytes32[]', name: '', type: 'bytes32[]' }],
         stateMutability: 'payable',
         type: 'function',
     },
@@ -700,11 +502,7 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
                     },
                     {
                         components: [
-                            {
-                                internalType: 'uint8',
-                                name: 'v',
-                                type: 'uint8',
-                            },
+                            { internalType: 'uint8', name: 'v', type: 'uint8' },
                             {
                                 internalType: 'bytes32',
                                 name: 'r',
@@ -732,13 +530,7 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
             },
         ],
         name: 'multiAttestByDelegation',
-        outputs: [
-            {
-                internalType: 'bytes32[]',
-                name: '',
-                type: 'bytes32[]',
-            },
-        ],
+        outputs: [{ internalType: 'bytes32[]', name: '', type: 'bytes32[]' }],
         stateMutability: 'payable',
         type: 'function',
     },
@@ -807,11 +599,7 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
                     },
                     {
                         components: [
-                            {
-                                internalType: 'uint8',
-                                name: 'v',
-                                type: 'uint8',
-                            },
+                            { internalType: 'uint8', name: 'v', type: 'uint8' },
                             {
                                 internalType: 'bytes32',
                                 name: 'r',
@@ -845,39 +633,19 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
     },
     {
         inputs: [
-            {
-                internalType: 'bytes32[]',
-                name: 'data',
-                type: 'bytes32[]',
-            },
+            { internalType: 'bytes32[]', name: 'data', type: 'bytes32[]' },
         ],
         name: 'multiRevokeOffchain',
-        outputs: [
-            {
-                internalType: 'uint64',
-                name: '',
-                type: 'uint64',
-            },
-        ],
+        outputs: [{ internalType: 'uint64', name: '', type: 'uint64' }],
         stateMutability: 'nonpayable',
         type: 'function',
     },
     {
         inputs: [
-            {
-                internalType: 'bytes32[]',
-                name: 'data',
-                type: 'bytes32[]',
-            },
+            { internalType: 'bytes32[]', name: 'data', type: 'bytes32[]' },
         ],
         name: 'multiTimestamp',
-        outputs: [
-            {
-                internalType: 'uint64',
-                name: '',
-                type: 'uint64',
-            },
-        ],
+        outputs: [{ internalType: 'uint64', name: '', type: 'uint64' }],
         stateMutability: 'nonpayable',
         type: 'function',
     },
@@ -946,11 +714,7 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
                     },
                     {
                         components: [
-                            {
-                                internalType: 'uint8',
-                                name: 'v',
-                                type: 'uint8',
-                            },
+                            { internalType: 'uint8', name: 'v', type: 'uint8' },
                             {
                                 internalType: 'bytes32',
                                 name: 'r',
@@ -983,40 +747,16 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
         type: 'function',
     },
     {
-        inputs: [
-            {
-                internalType: 'bytes32',
-                name: 'data',
-                type: 'bytes32',
-            },
-        ],
+        inputs: [{ internalType: 'bytes32', name: 'data', type: 'bytes32' }],
         name: 'revokeOffchain',
-        outputs: [
-            {
-                internalType: 'uint64',
-                name: '',
-                type: 'uint64',
-            },
-        ],
+        outputs: [{ internalType: 'uint64', name: '', type: 'uint64' }],
         stateMutability: 'nonpayable',
         type: 'function',
     },
     {
-        inputs: [
-            {
-                internalType: 'bytes32',
-                name: 'data',
-                type: 'bytes32',
-            },
-        ],
+        inputs: [{ internalType: 'bytes32', name: 'data', type: 'bytes32' }],
         name: 'timestamp',
-        outputs: [
-            {
-                internalType: 'uint64',
-                name: '',
-                type: 'uint64',
-            },
-        ],
+        outputs: [{ internalType: 'uint64', name: '', type: 'uint64' }],
         stateMutability: 'nonpayable',
         type: 'function',
     },

@@ -9,6 +9,10 @@ import {
     Client,
     createPublicClient,
     createWalletClient,
+    PublicClient,
+    HttpTransport,
+    Account,
+    RpcSchema,
 } from 'viem'
 import { mainnet, sepolia, Chain } from 'viem/chains'
 
@@ -45,11 +49,19 @@ export class ViemService {
         })
     }
 
-    getPublicClient(chain: Chain, transport: Transport) {
-        return createPublicClient({
-            chain,
-            transport,
+    // getPublicClient(chain: Chain, transport: Transport) {
+    //     return createPublicClient({
+    //         chain,
+    //         transport,
+    //     })
+    // }
+
+    getPublicClient(): PublicClient<HttpTransport, Chain, Account, RpcSchema> {
+        const client = createPublicClient({
+            chain: sepolia,
+            transport: http(),
         })
+        return client
     }
 
     getContractByClient(
