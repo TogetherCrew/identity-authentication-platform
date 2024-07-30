@@ -5,10 +5,11 @@ import helmet from 'helmet'
 import * as compression from 'compression'
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino'
 import * as session from 'express-session'
-import { VersioningType } from '@nestjs/common'
+import { VersioningType, ValidationPipe } from '@nestjs/common'
 import { setupSwagger } from './doc'
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { bufferLogs: true })
+    app.useGlobalPipes(new ValidationPipe())
     app.use(helmet())
     app.use(compression())
     app.enableCors()

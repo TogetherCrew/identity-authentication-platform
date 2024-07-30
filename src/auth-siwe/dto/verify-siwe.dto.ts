@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString } from 'class-validator'
+import { IsString, IsNotEmpty } from 'class-validator'
 
 export class VerifySiweDto {
     @ApiProperty({
@@ -7,6 +7,7 @@ export class VerifySiweDto {
         example: 'ethereum-eip4361-message',
     })
     @IsString()
+    @IsNotEmpty()
     readonly message: string
 
     @ApiProperty({
@@ -14,5 +15,6 @@ export class VerifySiweDto {
         example: '0xSignature',
     })
     @IsString()
+    @IsNotEmpty()
     readonly signature: string
 }

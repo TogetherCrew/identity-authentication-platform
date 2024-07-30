@@ -4,6 +4,6 @@ import { UtilsModule } from 'src/utils/utils.module'
 @Module({
     imports: [UtilsModule],
     providers: [EasService],
-    exports: [],
+    exports: [EasService],
 })
 export class EasModule {}

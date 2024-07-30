@@ -10,6 +10,7 @@ import { AuthGoogleModule } from './auth-google/auth-google.module'
 import { AuthSiweModule } from './auth-siwe/auth-siwe.module'
 import { configModules, configValidationSchema } from './config'
 import { pinoConfig } from './config/pino.config'
+import { LinkingModule } from './linking/linking.module'
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { pinoConfig } from './config/pino.config'
         AuthDiscordModule,
         AuthGoogleModule,
         AuthSiweModule,
+        LinkingModule,
     ],
     controllers: [AppController],
     providers: [AppService],

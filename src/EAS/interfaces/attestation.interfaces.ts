@@ -26,3 +26,19 @@ export interface IDelegatedAttestationRequest extends IAttestationRequest {
     attester: Address
     deadline: bigint
 }
+
+export interface TypedData {
+    name: string
+    type:
+        | 'bool'
+        | 'uint8'
+        | 'uint16'
+        | 'uint32'
+        | 'uint64'
+        | 'uint128'
+        | 'uint256'
+        | 'address'
+        | 'string'
+        | 'bytes'
+        | 'bytes32'
+}
