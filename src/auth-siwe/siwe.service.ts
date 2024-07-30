@@ -1,30 +1,28 @@
-// auth-siwe.service.ts
 import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common'
-import { generateNonce, SiweMessage } from 'siwe'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
+import { generateSiweNonce } from 'viem/siwe'
+import { ViemService } from '../utils/viem.service'
+import { Hex } from 'viem'
 
 @Injectable()
 export class SiweService {
     private readonly logger = new Logger(SiweService.name)
-    createNonce(): string {
-        return generateNonce()
+
+    constructor(private readonly viemService: ViemService) {}
+
+    getNonce(): string {
+        return generateSiweNonce()
     }
 
-    async verifySiweMessage(
-        message: string,
-        signature: string
-    ): Promise<SiweMessage> {
-        try {
-            const SIWEObject = new SiweMessage(message)
-            await SIWEObject.verify({ signature })
-            return new SiweMessage(message)
-        } catch (error) {
-            this.logger.error(
-                `Error ${AUTH_PROVIDERS.SIWE} verification`,
-                error
-            )
+    async verifySiweMessage(message: string, signature: Hex, chainId: number) {
+        const publicClient = this.viemService.getPublicClient(chainId)
+        const isValid = await publicClient.verifySiweMessage({
+            message,
+            signature,
+        })
+        if (!isValid) {
             throw new HttpException(
-                `Error ${AUTH_PROVIDERS.SIWE} verification`,
+                `${AUTH_PROVIDERS.SIWE} verification Failed`,
                 HttpStatus.BAD_REQUEST
             )
         }

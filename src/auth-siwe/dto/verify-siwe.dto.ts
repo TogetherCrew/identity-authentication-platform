@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, IsNotEmpty } from 'class-validator'
-
+import { IsString, IsNotEmpty, IsNumber, IsIn } from 'class-validator'
+import { SUPPORTED_CHAIN_IDS } from '../../utils/constants/viem.constants'
+import { SignMessageReturnType, Hex } from 'viem'
 export class VerifySiweDto {
     @ApiProperty({
         description: 'The SIWE message sent by the client.',
@@ -8,7 +9,7 @@ export class VerifySiweDto {
     })
     @IsString()
     @IsNotEmpty()
-    readonly message: string
+    readonly message: SignMessageReturnType
 
     @ApiProperty({
         description: 'Signature of the SIWE message.',
@@ -16,5 +17,16 @@ export class VerifySiweDto {
     })
     @IsString()
     @IsNotEmpty()
-    readonly signature: string
+    readonly signature: Hex
+
+    @ApiProperty({
+        description: 'Chain Id',
+        example: '1',
+        required: true,
+        enum: SUPPORTED_CHAIN_IDS,
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    @IsIn(SUPPORTED_CHAIN_IDS)
+    readonly chainId: number
 }

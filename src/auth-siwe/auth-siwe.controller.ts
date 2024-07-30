@@ -1,4 +1,3 @@
-// auth-siwe-controller.service.ts
 import {
     Controller,
     Get,
@@ -11,13 +10,15 @@ import { SiweService } from './siwe.service'
 import {
     ApiTags,
     ApiOperation,
-    ApiResponse,
+    ApiBadRequestResponse,
     ApiOkResponse,
 } from '@nestjs/swagger'
 import { AuthService } from '../auth/auth.service'
 import { VerifySiweDto } from './dto/verify-siwe.dto'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 import { JwtResponse } from '../auth//dto/jwt-response.dto'
+import { parseSiweMessage } from 'viem/siwe'
+import { NonceResponse } from './dto/nonce.dto'
 
 @ApiTags(`${AUTH_PROVIDERS.SIWE} Authentication`)
 @Controller(`auth/${AUTH_PROVIDERS.SIWE}`)
@@ -29,9 +30,12 @@ export class AuthSiweController {
 
     @Get('nonce')
     @ApiOperation({ summary: 'Get SIWE nonce' })
-    @ApiResponse({ status: 200, description: 'Nonce generated successfully.' })
-    getNonce(): string {
-        return this.siweService.createNonce()
+    @ApiOkResponse({
+        description: 'Nonce generated successfully.',
+        type: NonceResponse,
+    })
+    getNonce() {
+        return { nonce: this.siweService.getNonce() }
     }
 
     @Post('verify')
@@ -40,15 +44,13 @@ export class AuthSiweController {
         description: 'JWT generated successfully.',
         type: JwtResponse,
     })
+    @ApiBadRequestResponse({ description: 'SIWE verification failed.' })
     @HttpCode(HttpStatus.OK)
     async verifySiwe(@Body() verifySiweDto: VerifySiweDto) {
-        const { message, signature } = verifySiweDto
-        const siweMessage = await this.siweService.verifySiweMessage(
-            message,
-            signature
-        )
+        const { message, signature, chainId } = verifySiweDto
+        await this.siweService.verifySiweMessage(message, signature, chainId)
         const jwt = await this.authService.generateJwt(
-            siweMessage.address,
+            parseSiweMessage(message).address,
             AUTH_PROVIDERS.SIWE
         )
         return { jwt }

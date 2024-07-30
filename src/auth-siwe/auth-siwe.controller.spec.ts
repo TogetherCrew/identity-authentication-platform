@@ -4,32 +4,33 @@ import { SiweService } from './siwe.service'
 import { AuthService } from '../auth/auth.service'
 import { VerifySiweDto } from './dto/verify-siwe.dto'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
+import { parseSiweMessage } from 'viem/siwe'
+
+jest.mock('viem/siwe', () => ({
+    parseSiweMessage: jest.fn(),
+}))
 
 describe('AuthSiweController', () => {
     let controller: AuthSiweController
     let siweService: SiweService
     let authService: AuthService
 
-    const mockSiweService = {
-        createNonce: jest.fn().mockReturnValue('mock-nonce'),
-        verifySiweMessage: jest.fn().mockResolvedValue({ address: '0x123' }),
-    }
-
-    const mockAuthService = {
-        generateJwt: jest.fn().mockResolvedValue('mock-jwt'),
-    }
-
-    beforeAll(async () => {
+    beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [AuthSiweController],
             providers: [
                 {
                     provide: SiweService,
-                    useValue: mockSiweService,
+                    useValue: {
+                        getNonce: jest.fn(),
+                        verifySiweMessage: jest.fn(),
+                    },
                 },
                 {
                     provide: AuthService,
-                    useValue: mockAuthService,
+                    useValue: {
+                        generateJwt: jest.fn(),
+                    },
                 },
             ],
         }).compile()
@@ -45,27 +46,39 @@ describe('AuthSiweController', () => {
 
     describe('getNonce', () => {
         it('should return a nonce', () => {
-            const result = controller.getNonce()
-            expect(result).toBe('mock-nonce')
-            expect(siweService.createNonce).toHaveBeenCalled()
+            const nonce = 'nonce'
+            jest.spyOn(siweService, 'getNonce').mockReturnValue(nonce)
+
+            expect(controller.getNonce()).toEqual({ nonce })
         })
     })
 
     describe('verifySiwe', () => {
-        it('should verify the SIWE message and return a JWT', async () => {
+        it('should verify SIWE message and return a JWT', async () => {
             const verifySiweDto: VerifySiweDto = {
-                message: 'mock-message',
-                signature: 'mock-signature',
+                message: '0xmessage',
+                signature: '0xsignature',
+                chainId: 1,
             }
+            const jwt = 'jwt'
+            const address = '0xaddress'
+
+            jest.spyOn(siweService, 'verifySiweMessage').mockResolvedValue(
+                undefined
+            )
+            jest.spyOn(authService, 'generateJwt').mockResolvedValue(jwt)
+            ;(parseSiweMessage as jest.Mock).mockReturnValue({ address })
 
             const result = await controller.verifySiwe(verifySiweDto)
-            expect(result).toEqual({ jwt: 'mock-jwt' })
+
+            expect(result).toEqual({ jwt })
             expect(siweService.verifySiweMessage).toHaveBeenCalledWith(
-                'mock-message',
-                'mock-signature'
+                verifySiweDto.message,
+                verifySiweDto.signature,
+                verifySiweDto.chainId
             )
             expect(authService.generateJwt).toHaveBeenCalledWith(
-                '0x123',
+                address,
                 AUTH_PROVIDERS.SIWE
             )
         })

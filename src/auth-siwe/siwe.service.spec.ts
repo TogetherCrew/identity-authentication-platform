@@ -1,27 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { SiweService } from './siwe.service'
-// import { SiweMessage } from 'siwe'
-// import { HttpException, HttpStatus } from '@nestjs/common'
-// import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
-
-jest.mock('siwe', () => {
-    return {
-        SiweMessage: jest.fn().mockImplementation((message) => {
-            return {
-                message,
-                verify: jest.fn(),
-            }
-        }),
-        generateNonce: jest.fn(() => 'mock-nonce'),
-    }
-})
+import { ViemService } from '../utils/viem.service'
+import { HttpException } from '@nestjs/common'
 
 describe('SiweService', () => {
     let service: SiweService
+    let publicClientMock: { verifySiweMessage: jest.Mock }
 
-    beforeAll(async () => {
+    beforeEach(async () => {
+        publicClientMock = {
+            verifySiweMessage: jest.fn(),
+        }
+
         const module: TestingModule = await Test.createTestingModule({
-            providers: [SiweService],
+            providers: [
+                SiweService,
+                {
+                    provide: ViemService,
+                    useValue: {
+                        getPublicClient: jest
+                            .fn()
+                            .mockReturnValue(publicClientMock),
+                    },
+                },
+            ],
         }).compile()
 
         service = module.get<SiweService>(SiweService)
@@ -32,51 +34,37 @@ describe('SiweService', () => {
     })
 
     describe('createNonce', () => {
-        it('should return a nonce', () => {
-            const nonce = service.createNonce()
-            expect(nonce).toBe('mock-nonce')
+        it('should generate a nonce', () => {
+            const nonce = 'nonce'
+            jest.spyOn(service, 'getNonce').mockReturnValue(nonce)
+
+            expect(service.getNonce()).toBe(nonce)
         })
     })
 
-    // describe('verifySiweMessage', () => {
-    //     it('should verify the SIWE message and return the message object', async () => {
-    //         const mockMessage = 'mock-message'
-    //         const mockSignature = 'mock-signature'
+    describe('verifySiweMessage', () => {
+        it('should verify a valid SIWE message', async () => {
+            const message = 'valid message'
+            const signature = '0xvalidsignature'
+            const chainId = 1
 
-    //         const siweMessageInstance = new SiweMessage(mockMessage)
-    //         ;(siweMessageInstance.verify as jest.Mock).mockResolvedValue(true)
+            publicClientMock.verifySiweMessage.mockResolvedValue(true)
 
-    //         const result = await service.verifySiweMessage(
-    //             mockMessage,
-    //             mockSignature
-    //         )
+            await expect(
+                service.verifySiweMessage(message, signature, chainId)
+            ).resolves.not.toThrow()
+        })
 
-    //         expect(result).toBeInstanceOf(SiweMessage)
-    //         expect(siweMessageInstance.verify).toHaveBeenCalledWith({
-    //             signature: mockSignature,
-    //         })
-    //     })
+        it('should throw an error for an invalid SIWE message', async () => {
+            const message = 'invalid message'
+            const signature = '0xinvalidsignature'
+            const chainId = 1
 
-    //     it('should throw an HttpException if verification fails', async () => {
-    //         const mockMessage = 'mock-message'
-    //         const mockSignature = 'mock-signature'
+            publicClientMock.verifySiweMessage.mockResolvedValue(false)
 
-    //         const siweMessageInstance = new SiweMessage(mockMessage)
-    //         ;(siweMessageInstance.verify as jest.Mock).mockRejectedValue(
-    //             new Error('Verification failed')
-    //         )
-
-    //         await expect(
-    //             service.verifySiweMessage(mockMessage, mockSignature)
-    //         ).rejects.toThrow(
-    //             new HttpException(
-    //                 `Error ${AUTH_PROVIDERS.SIWE} verification`,
-    //                 HttpStatus.BAD_REQUEST
-    //             )
-    //         )
-    //         expect(siweMessageInstance.verify).toHaveBeenCalledWith({
-    //             signature: mockSignature,
-    //         })
-    //     })
-    // })
+            await expect(
+                service.verifySiweMessage(message, signature, chainId)
+            ).rejects.toThrow(HttpException)
+        })
+    })
 })
