@@ -1,0 +1,70 @@
+import { Test, TestingModule } from '@nestjs/testing'
+import { SiweService } from './siwe.service'
+import { ViemService } from '../utils/viem.service'
+import { HttpException } from '@nestjs/common'
+
+describe('SiweService', () => {
+    let service: SiweService
+    let publicClientMock: { verifySiweMessage: jest.Mock }
+
+    beforeEach(async () => {
+        publicClientMock = {
+            verifySiweMessage: jest.fn(),
+        }
+
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                SiweService,
+                {
+                    provide: ViemService,
+                    useValue: {
+                        getPublicClient: jest
+                            .fn()
+                            .mockReturnValue(publicClientMock),
+                    },
+                },
+            ],
+        }).compile()
+
+        service = module.get<SiweService>(SiweService)
+    })
+
+    it('should be defined', () => {
+        expect(service).toBeDefined()
+    })
+
+    describe('createNonce', () => {
+        it('should generate a nonce', () => {
+            const nonce = 'nonce'
+            jest.spyOn(service, 'getNonce').mockReturnValue(nonce)
+
+            expect(service.getNonce()).toBe(nonce)
+        })
+    })
+
+    describe('verifySiweMessage', () => {
+        it('should verify a valid SIWE message', async () => {
+            const message = 'valid message'
+            const signature = '0xvalidsignature'
+            const chainId = 1
+
+            publicClientMock.verifySiweMessage.mockResolvedValue(true)
+
+            await expect(
+                service.verifySiweMessage(message, signature, chainId)
+            ).resolves.not.toThrow()
+        })
+
+        it('should throw an error for an invalid SIWE message', async () => {
+            const message = 'invalid message'
+            const signature = '0xinvalidsignature'
+            const chainId = 1
+
+            publicClientMock.verifySiweMessage.mockResolvedValue(false)
+
+            await expect(
+                service.verifySiweMessage(message, signature, chainId)
+            ).rejects.toThrow(HttpException)
+        })
+    })
+})

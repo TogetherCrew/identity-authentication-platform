@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      target: development
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - GOOGLE_CLIENT_ID=x
+      - GOOGLE_CLIENT_SECRET=y
+      - GOOGLE_CALLBACK_URI=https://github.com/brocoders/nestjs-boilerplate/tree/main/src
+      - DISCORD_CLIENT_ID=v
+      - DISCORD_CLIENT_SECRET=b
+      - DISCORD_CALLBACK_URI=https://github.com/brocoders/nestjs-boilerplate/tree/main/src
+      - JWT_SECRET=t
+      - LOG_LEVEL=trace
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./coverage:/project/coverage
