@@ -18,8 +18,10 @@ async function bootstrap() {
     app.useLogger(app.get(Logger))
     app.useGlobalInterceptors(new LoggerErrorInterceptor())
     app.useGlobalFilters(new HttpExceptionFilter())
+
     const configService = app.get(ConfigService)
     const port = configService.get('app.port')
+
     app.use(
         session({
             secret: configService.get('app.sessionSecret'),
@@ -37,8 +39,13 @@ async function bootstrap() {
         defaultVersion: '1',
         prefix: 'api/v',
     })
+
     setupSwagger(app)
-    await app.listen(port)
+
+    await app.listen(port, () => {
+        const logger = app.get(Logger)
+        logger.log(`Server is running on port ${port}`, 'NestApplication')
+    })
 }
 
 bootstrap()
