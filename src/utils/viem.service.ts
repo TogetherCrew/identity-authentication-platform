@@ -1,20 +1,32 @@
 import { Injectable } from '@nestjs/common'
-import { mainnet, sepolia, Chain } from 'viem/chains'
+import { createPublicClient, http, Client } from 'viem'
+import { SUPPORTED_CHAIN_IDS } from './constants/viem.constants'
 import * as chains from 'viem/chains'
 
 @Injectable()
 export class ViemService {
-    constructor() {}
+    private publicClients: Map<number, any>
 
-    stringToChain(chainString: string): Chain {
-        switch (chainString) {
-            case 'mainnet':
-                return mainnet
-            case 'sepolia':
-                return sepolia
-            default:
-                return null
+    constructor() {
+        this.publicClients = new Map<number, Client<any, any, any>>()
+        this.setPublicClients()
+    }
+
+    private setPublicClients() {
+        for (const chainId of SUPPORTED_CHAIN_IDS) {
+            const chain = this.idToChain(chainId)
+            if (chain) {
+                const client = createPublicClient({
+                    chain,
+                    transport: http(),
+                })
+                this.publicClients.set(chainId, client)
+            }
         }
+    }
+
+    getPublicClient(chainId: number) {
+        return this.publicClients.get(chainId)
     }
 
     idToChain(chainId: number) {
