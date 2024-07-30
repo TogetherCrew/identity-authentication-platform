@@ -1,9 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { LoggerModule } from 'nestjs-pino'
-
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
 import { AuthModule } from './auth/auth.module'
 import { AuthDiscordModule } from './auth-discord/auth-discord.module'
 import { AuthGoogleModule } from './auth-google/auth-google.module'
@@ -30,7 +27,7 @@ import { LinkingModule } from './linking/linking.module'
         AuthSiweModule,
         LinkingModule,
     ],
-    controllers: [AppController],
-    providers: [AppService],
+    controllers: [],
+    providers: [],
 })
 export class AppModule {}
