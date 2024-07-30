@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common'
+import { Injectable, BadRequestException, Logger } from '@nestjs/common'
 import { HttpService } from '@nestjs/axios'
 import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
@@ -72,12 +72,8 @@ export class OAuthService {
             )
             return response.data
         } catch (error) {
-            this.logger.error(`Failed to exchange ${provider} code for token`, {
-                error,
-            })
-            throw new HttpException(
-                `Failed to exchange ${provider} code for token`,
-                HttpStatus.BAD_REQUEST
+            throw new BadRequestException(
+                `Failed to exchange ${provider} code for token`
             )
         }
     }
@@ -93,13 +89,8 @@ export class OAuthService {
             )
             return response.data
         } catch (error) {
-            this.logger.error(
-                `Failed to retrieve user information from ${provider}`,
-                { error }
-            )
-            throw new HttpException(
-                `Failed to retrieve user information from ${provider}`,
-                HttpStatus.INTERNAL_SERVER_ERROR
+            throw new BadRequestException(
+                `Failed to retrieve user information from ${provider}`
             )
         }
     }
@@ -113,13 +104,8 @@ export class OAuthService {
             )
             return userInfo
         } catch (error) {
-            this.logger.error(
-                `Error handling ${provider} OAuth2 callback`,
-                error
-            )
-            throw new HttpException(
-                `Failed to handle ${provider} OAuth2 callback`,
-                HttpStatus.INTERNAL_SERVER_ERROR
+            throw new BadRequestException(
+                `Failed to handle ${provider} OAuth2 callback`
             )
         }
     }

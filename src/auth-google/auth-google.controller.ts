@@ -3,7 +3,7 @@ import {
     Get,
     Query,
     Redirect,
-    HttpException,
+    ForbiddenException,
     HttpStatus,
     Session,
 } from '@nestjs/common'
@@ -54,7 +54,7 @@ export class AuthGoogleController {
         @Session() session: any
     ) {
         if (!this.cryptoService.validateState(state, session.state)) {
-            throw new HttpException('Invalid state', HttpStatus.FORBIDDEN)
+            throw new ForbiddenException(`Invalid state`)
         }
         const userInfo = await this.oAuthService.handleOAuth2Callback(
             AUTH_PROVIDERS.GOOGLE,
