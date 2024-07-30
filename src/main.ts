@@ -28,14 +28,13 @@ async function bootstrap() {
             },
         })
     )
-    setupSwagger(app)
 
     app.enableVersioning({
         type: VersioningType.URI,
         defaultVersion: '1',
         prefix: 'api/v',
     })
-
+    setupSwagger(app)
     await app.listen(port)
 }
 bootstrap()
