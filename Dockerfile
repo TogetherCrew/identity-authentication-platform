@@ -20,7 +20,7 @@ FROM node:20-alpine AS production
 WORKDIR /app
 COPY --from=builder /app .
 COPY . .
-RUN npm install --only=production
+RUN npm install --omit=dev
 EXPOSE 3000
 CMD ["node", "dist/main"]
 
