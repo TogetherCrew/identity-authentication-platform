@@ -15,7 +15,7 @@ resolver 127.0.0.11 valid=30s;
 resolver_timeout 5s;
 
 map $host $backend {
-    api.onchain.${DOMAIN}           http://app:3000;
+    onchain.${DOMAIN}           http://app:3000;
 }
 
 # websockets
