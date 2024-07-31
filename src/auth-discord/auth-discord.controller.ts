@@ -3,7 +3,6 @@ import {
     Get,
     Query,
     Redirect,
-    ForbiddenException,
     HttpStatus,
     Session,
 } from '@nestjs/common'
@@ -19,6 +18,7 @@ import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 import { JwtResponse } from '../auth//dto/jwt-response.dto'
+import { AuthDiscordService } from './auth-discord.service'
 
 @ApiTags(`${AUTH_PROVIDERS.DISCORD} Authentication`)
 @Controller(`auth/${AUTH_PROVIDERS.DISCORD}`)
@@ -26,7 +26,8 @@ export class AuthDiscordController {
     constructor(
         private readonly oAuthService: OAuthService,
         private readonly authService: AuthService,
-        private readonly cryptoService: CryptoUtilsService
+        private readonly cryptoService: CryptoUtilsService,
+        private readonly authDiscordService: AuthDiscordService
     ) {}
 
     @Get('authenticate')
@@ -53,17 +54,10 @@ export class AuthDiscordController {
         @Query() { code, state }: HandleOAuthCallback,
         @Session() session: any
     ) {
-        if (!this.cryptoService.validateState(state, session.state)) {
-            throw new ForbiddenException(`Invalid state`)
-        }
-        const userInfo = await this.oAuthService.handleOAuth2Callback(
-            AUTH_PROVIDERS.DISCORD,
-            code
+        return this.authDiscordService.handleOAuthCallback(
+            code,
+            state,
+            session.state
         )
-        const jwt = await this.authService.generateJwt(
-            userInfo.id,
-            AUTH_PROVIDERS.DISCORD
-        )
-        return { jwt }
     }
 }

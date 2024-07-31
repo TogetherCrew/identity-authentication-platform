@@ -1,10 +1,10 @@
-// test/auth/auth.discord.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing'
 import { AuthDiscordController } from './auth-discord.controller'
 import { OAuthService } from '../auth/oAuth.service'
 import { AuthService } from '../auth/auth.service'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { AuthDiscordService } from './auth-discord.service'
+import { HttpStatus, ForbiddenException } from '@nestjs/common'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 
 describe('AuthDiscordController', () => {
@@ -20,6 +20,9 @@ describe('AuthDiscordController', () => {
     const mockCryptoService = {
         generateState: jest.fn().mockReturnValue('mock-state'),
         validateState: jest.fn().mockReturnValue(true),
+    }
+    const mockAuthDiscordService = {
+        handleOAuthCallback: jest.fn(),
     }
 
     beforeAll(async () => {
@@ -37,6 +40,10 @@ describe('AuthDiscordController', () => {
                 {
                     provide: CryptoUtilsService,
                     useValue: mockCryptoService,
+                },
+                {
+                    provide: AuthDiscordService,
+                    useValue: mockAuthDiscordService,
                 },
             ],
         }).compile()
@@ -64,36 +71,33 @@ describe('AuthDiscordController', () => {
     describe('handleOAuthCallback', () => {
         it('should handle OAuth callback successfully', async () => {
             const mockSession = { state: 'mock-state' }
+            mockAuthDiscordService.handleOAuthCallback.mockResolvedValue({
+                jwt: 'mock-jwt',
+            })
             const result = await controller.handleOAuthCallback(
                 { code: 'valid-code', state: 'mock-state' },
                 mockSession
             )
             expect(result).toEqual({ jwt: 'mock-jwt' })
-            expect(mockCryptoService.validateState).toHaveBeenCalledWith(
-                'mock-state',
-                'mock-state'
-            )
-            expect(mockOAuthService.handleOAuth2Callback).toHaveBeenCalledWith(
-                'discord',
-                'valid-code'
-            )
-            expect(mockAuthService.generateJwt).toHaveBeenCalledWith(
-                'user-id',
-                'discord'
-            )
+            expect(
+                mockAuthDiscordService.handleOAuthCallback
+            ).toHaveBeenCalledWith('valid-code', 'mock-state', 'mock-state')
         })
 
         it('should throw HttpException if state is invalid', async () => {
             const mockSession = { state: 'different-state' }
             mockCryptoService.validateState.mockReturnValue(false)
+            mockAuthDiscordService.handleOAuthCallback.mockImplementation(
+                () => {
+                    throw new ForbiddenException('Invalid state')
+                }
+            )
             await expect(
                 controller.handleOAuthCallback(
                     { code: 'valid-code', state: 'mock-state' },
                     mockSession
                 )
-            ).rejects.toThrow(
-                new HttpException('Invalid state', HttpStatus.FORBIDDEN)
-            )
+            ).rejects.toThrow(ForbiddenException)
         })
     })
 })
