@@ -5,6 +5,7 @@ import { AuthService } from '../auth/auth.service'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { ForbiddenException } from '@nestjs/common'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
+import { ConfigService } from '@nestjs/config'
 
 describe('AuthGoogleService', () => {
     let service: AuthGoogleService
@@ -18,6 +19,7 @@ describe('AuthGoogleService', () => {
     const mockCryptoService = {
         validateState: jest.fn().mockReturnValue(true),
     }
+    const mockFrontEndURL = 'http://localhost:3000'
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -35,6 +37,16 @@ describe('AuthGoogleService', () => {
                     provide: CryptoUtilsService,
                     useValue: mockCryptoService,
                 },
+                {
+                    provide: ConfigService,
+                    useValue: {
+                        get: jest.fn((key: string) => {
+                            if (key === 'app.frontEndURL')
+                                return mockFrontEndURL
+                            return null
+                        }),
+                    },
+                },
             ],
         }).compile()
 
@@ -48,7 +60,9 @@ describe('AuthGoogleService', () => {
                 'mock-state',
                 'mock-state'
             )
-            expect(result).toEqual({ jwt: 'mock-jwt' })
+            expect(result).toEqual(
+                'http://localhost:3000/callback?jwt=mock-jwt'
+            )
             expect(mockCryptoService.validateState).toHaveBeenCalledWith(
                 'mock-state',
                 'mock-state'

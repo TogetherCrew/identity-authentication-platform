@@ -43,6 +43,7 @@ export class AuthDiscordController {
     }
 
     @Get('authenticate/callback')
+    @Redirect()
     @ApiOperation({ summary: 'Handle Discord OAuth callback' })
     @ApiOkResponse({
         description: 'JWT generated successfully.',
@@ -52,10 +53,14 @@ export class AuthDiscordController {
         @Query() { code, state }: HandleOAuthCallback,
         @Session() session: any
     ) {
-        return this.authDiscordService.handleOAuthCallback(
+        const redirectUrl = await this.authDiscordService.handleOAuthCallback(
             code,
             state,
             session.state
         )
+        return {
+            url: redirectUrl,
+            statusCode: HttpStatus.FOUND,
+        }
     }
 }

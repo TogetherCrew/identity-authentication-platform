@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { AuthGoogleController } from './auth-google.controller'
 import { OAuthService } from '../auth/oAuth.service'
-import { AuthService } from '../auth/auth.service'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { AuthGoogleService } from './auth-google.service'
 import { HttpStatus, ForbiddenException } from '@nestjs/common'
@@ -14,15 +13,12 @@ describe('AuthGoogleController', () => {
         generateRedirectUrl: jest.fn().mockReturnValue('mock-url'),
         handleOAuth2Callback: jest.fn().mockResolvedValue({ id: 'user-id' }),
     }
-    const mockAuthService = {
-        generateJwt: jest.fn().mockResolvedValue('mock-jwt'),
-    }
     const mockCryptoService = {
         generateState: jest.fn().mockReturnValue('mock-state'),
         validateState: jest.fn().mockReturnValue(true),
     }
     const mockAuthGoogleService = {
-        handleOAuthCallback: jest.fn(),
+        handleOAuthCallback: jest.fn().mockResolvedValue('mock-redirect-url'),
     }
 
     beforeAll(async () => {
@@ -32,10 +28,6 @@ describe('AuthGoogleController', () => {
                 {
                     provide: OAuthService,
                     useValue: mockOAuthService,
-                },
-                {
-                    provide: AuthService,
-                    useValue: mockAuthService,
                 },
                 {
                     provide: CryptoUtilsService,
@@ -71,14 +63,14 @@ describe('AuthGoogleController', () => {
     describe('handleOAuthCallback', () => {
         it('should handle OAuth callback successfully', async () => {
             const mockSession = { state: 'mock-state' }
-            mockAuthGoogleService.handleOAuthCallback.mockResolvedValue({
-                jwt: 'mock-jwt',
-            })
             const result = await controller.handleOAuthCallback(
                 { code: 'valid-code', state: 'mock-state' },
                 mockSession
             )
-            expect(result).toEqual({ jwt: 'mock-jwt' })
+            expect(result).toEqual({
+                url: 'mock-redirect-url',
+                statusCode: HttpStatus.FOUND,
+            })
             expect(
                 mockAuthGoogleService.handleOAuthCallback
             ).toHaveBeenCalledWith('valid-code', 'mock-state', 'mock-state')

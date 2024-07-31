@@ -18,7 +18,6 @@ import { JwtResponse } from '../auth/dto/jwt-response.dto'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { OAuthService } from '../auth/oAuth.service'
-
 @ApiTags('Google Authentication')
 @Controller('auth/google')
 export class AuthGoogleController {
@@ -43,6 +42,7 @@ export class AuthGoogleController {
     }
 
     @Get('authenticate/callback')
+    @Redirect()
     @ApiOperation({ summary: 'Handle Google OAuth callback' })
     @ApiOkResponse({
         description: 'JWT generated successfully.',
@@ -52,10 +52,15 @@ export class AuthGoogleController {
         @Query() { code, state }: HandleOAuthCallback,
         @Session() session: any
     ) {
-        return this.authGoogleService.handleOAuthCallback(
+        const redirectUrl = await this.authGoogleService.handleOAuthCallback(
             code,
             state,
             session.state
         )
+
+        return {
+            url: redirectUrl,
+            statusCode: HttpStatus.FOUND,
+        }
     }
 }
