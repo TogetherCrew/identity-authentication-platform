@@ -13,7 +13,6 @@ import {
     ApiOkResponse,
 } from '@nestjs/swagger'
 import { OAuthService } from '../auth/oAuth.service'
-import { AuthService } from '../auth/auth.service'
 import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
@@ -25,7 +24,6 @@ import { AuthDiscordService } from './auth-discord.service'
 export class AuthDiscordController {
     constructor(
         private readonly oAuthService: OAuthService,
-        private readonly authService: AuthService,
         private readonly cryptoService: CryptoUtilsService,
         private readonly authDiscordService: AuthDiscordService
     ) {}
