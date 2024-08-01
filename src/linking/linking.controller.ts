@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpStatus, HttpCode } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { AuthService } from '../auth/auth.service'
-import { ViemService } from '../utils/viem.service'
+import { ViemUtilsService } from '../utils/viem.utils.service'
 import { LinkIdentitiesDto } from './dto/link-identities.dto'
 import { EasService } from '../EAS/eas.service'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
@@ -11,7 +11,7 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 export class LinkingController {
     constructor(
         private readonly authService: AuthService,
-        private readonly viemService: ViemService,
+        private readonly viemUtilsService: ViemUtilsService,
         private readonly easService: EasService
     ) {}
 
@@ -23,20 +23,24 @@ export class LinkingController {
     })
     @HttpCode(HttpStatus.OK)
     async linkIdentities(@Body() linkIdentitiesDto: LinkIdentitiesDto) {
-        const { anyJwt, chainId } = linkIdentitiesDto
+        const { chainId } = linkIdentitiesDto
         // TODO: Check the jwt payloads
         // const walletJwtPayload = await this.authService.validateToken(walletJwt)
-        const anyJwtPayload = await this.authService.validateToken(anyJwt)
+        // const anyJwtPayload = await this.authService.validateToken(anyJwt)
         // await this.easService.getDelegatedAttestationRequest(
         //     chainId,
-        //     ['hash', anyJwtPayload.sub, walletJwtPayload.sub],
-        //     walletJwtPayload.sub
+        //     ['hash', 'provider', 'secret'],
+        //     walletJwtPayload.sub as '0x${string}'
         // )
 
         const userAccount = privateKeyToAccount(generatePrivateKey())
         const request = await this.easService.getDelegatedAttestationRequest(
             chainId,
-            ['hash', anyJwtPayload.sub, userAccount.address],
+            [
+                '0x41570bc46b81fc88ef12a6077dd640aa9ec7a2d0b00b4919d151d495a0590938',
+                'provider',
+                'secret',
+            ],
             userAccount.address
         )
 

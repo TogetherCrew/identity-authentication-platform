@@ -4,7 +4,7 @@ import { SUPPORTED_CHAIN_IDS } from './constants/viem.constants'
 import * as chains from 'viem/chains'
 
 @Injectable()
-export class ViemService {
+export class ViemUtilsService {
     private publicClients: Map<number, any>
 
     constructor() {

@@ -27,10 +27,6 @@ async function bootstrap() {
             secret: configService.get('app.sessionSecret'),
             resave: false,
             saveUninitialized: false,
-            cookie: {
-                secure: configService.get('app.nodeEnv') === 'production',
-                httpOnly: true,
-            },
         })
     )
 
