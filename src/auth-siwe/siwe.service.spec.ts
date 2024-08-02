@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { SiweService } from './siwe.service'
-import { ViemService } from '../utils/viem.service'
+import { ViemUtilsService } from '../utils/viem.utils.service'
 import { HttpException } from '@nestjs/common'
 
 describe('SiweService', () => {
@@ -16,7 +16,7 @@ describe('SiweService', () => {
             providers: [
                 SiweService,
                 {
-                    provide: ViemService,
+                    provide: ViemUtilsService,
                     useValue: {
                         getPublicClient: jest
                             .fn()

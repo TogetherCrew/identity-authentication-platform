@@ -1,10 +1,9 @@
-// test/auth/auth.google.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing'
 import { AuthGoogleController } from './auth-google.controller'
 import { OAuthService } from '../auth/oAuth.service'
-import { AuthService } from '../auth/auth.service'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
-import { HttpException, HttpStatus } from '@nestjs/common'
+import { AuthGoogleService } from './auth-google.service'
+import { HttpStatus, ForbiddenException } from '@nestjs/common'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 
 describe('AuthGoogleController', () => {
@@ -14,12 +13,12 @@ describe('AuthGoogleController', () => {
         generateRedirectUrl: jest.fn().mockReturnValue('mock-url'),
         handleOAuth2Callback: jest.fn().mockResolvedValue({ id: 'user-id' }),
     }
-    const mockAuthService = {
-        generateJwt: jest.fn().mockResolvedValue('mock-jwt'),
-    }
     const mockCryptoService = {
         generateState: jest.fn().mockReturnValue('mock-state'),
         validateState: jest.fn().mockReturnValue(true),
+    }
+    const mockAuthGoogleService = {
+        handleOAuthCallback: jest.fn().mockResolvedValue('mock-redirect-url'),
     }
 
     beforeAll(async () => {
@@ -31,12 +30,12 @@ describe('AuthGoogleController', () => {
                     useValue: mockOAuthService,
                 },
                 {
-                    provide: AuthService,
-                    useValue: mockAuthService,
-                },
-                {
                     provide: CryptoUtilsService,
                     useValue: mockCryptoService,
+                },
+                {
+                    provide: AuthGoogleService,
+                    useValue: mockAuthGoogleService,
                 },
             ],
         }).compile()
@@ -44,8 +43,8 @@ describe('AuthGoogleController', () => {
         controller = module.get<AuthGoogleController>(AuthGoogleController)
     })
 
-    describe('redirectToDiscord', () => {
-        it('should redirect to Discord authentication URL', () => {
+    describe('redirectToGoogle', () => {
+        it('should redirect to Google authentication URL', () => {
             const mockSession = { state: null }
             const result = controller.redirectToGoogle(mockSession)
             expect(result).toEqual({
@@ -68,32 +67,27 @@ describe('AuthGoogleController', () => {
                 { code: 'valid-code', state: 'mock-state' },
                 mockSession
             )
-            expect(result).toEqual({ jwt: 'mock-jwt' })
-            expect(mockCryptoService.validateState).toHaveBeenCalledWith(
-                'mock-state',
-                'mock-state'
-            )
-            expect(mockOAuthService.handleOAuth2Callback).toHaveBeenCalledWith(
-                AUTH_PROVIDERS.GOOGLE,
-                'valid-code'
-            )
-            expect(mockAuthService.generateJwt).toHaveBeenCalledWith(
-                'user-id',
-                AUTH_PROVIDERS.GOOGLE
-            )
+            expect(result).toEqual({
+                url: 'mock-redirect-url',
+                statusCode: HttpStatus.FOUND,
+            })
+            expect(
+                mockAuthGoogleService.handleOAuthCallback
+            ).toHaveBeenCalledWith('valid-code', 'mock-state', 'mock-state')
         })
 
         it('should throw HttpException if state is invalid', async () => {
             const mockSession = { state: 'different-state' }
             mockCryptoService.validateState.mockReturnValue(false)
+            mockAuthGoogleService.handleOAuthCallback.mockImplementation(() => {
+                throw new ForbiddenException('Invalid state')
+            })
             await expect(
                 controller.handleOAuthCallback(
                     { code: 'valid-code', state: 'mock-state' },
                     mockSession
                 )
-            ).rejects.toThrow(
-                new HttpException('Invalid state', HttpStatus.FORBIDDEN)
-            )
+            ).rejects.toThrow(ForbiddenException)
         })
     })
 })

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { EasService } from './eas.service'
-import { ViemService } from '../utils/viem.service'
+import { ViemUtilsService } from '../utils/viem.utils.service'
 import { ConfigService } from '@nestjs/config'
 import { generatePrivateKey } from 'viem/accounts'
 // import { EAS_SEPOLIA_CONTRACT_ADDRESS } from './constants/sepolia'
@@ -13,7 +13,7 @@ describe('EasService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 EasService,
-                ViemService,
+                ViemUtilsService,
                 {
                     provide: ConfigService,
                     useValue: {

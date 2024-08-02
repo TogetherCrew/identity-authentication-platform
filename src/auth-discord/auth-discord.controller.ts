@@ -3,7 +3,6 @@ import {
     Get,
     Query,
     Redirect,
-    HttpException,
     HttpStatus,
     Session,
 } from '@nestjs/common'
@@ -14,19 +13,19 @@ import {
     ApiOkResponse,
 } from '@nestjs/swagger'
 import { OAuthService } from '../auth/oAuth.service'
-import { AuthService } from '../auth/auth.service'
 import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 import { JwtResponse } from '../auth//dto/jwt-response.dto'
+import { AuthDiscordService } from './auth-discord.service'
 
 @ApiTags(`${AUTH_PROVIDERS.DISCORD} Authentication`)
 @Controller(`auth/${AUTH_PROVIDERS.DISCORD}`)
 export class AuthDiscordController {
     constructor(
         private readonly oAuthService: OAuthService,
-        private readonly authService: AuthService,
-        private readonly cryptoService: CryptoUtilsService
+        private readonly cryptoService: CryptoUtilsService,
+        private readonly authDiscordService: AuthDiscordService
     ) {}
 
     @Get('authenticate')
@@ -44,6 +43,7 @@ export class AuthDiscordController {
     }
 
     @Get('authenticate/callback')
+    @Redirect()
     @ApiOperation({ summary: 'Handle Discord OAuth callback' })
     @ApiOkResponse({
         description: 'JWT generated successfully.',
@@ -53,17 +53,14 @@ export class AuthDiscordController {
         @Query() { code, state }: HandleOAuthCallback,
         @Session() session: any
     ) {
-        if (!this.cryptoService.validateState(state, session.state)) {
-            throw new HttpException('Invalid state', HttpStatus.FORBIDDEN)
+        const redirectUrl = await this.authDiscordService.handleOAuthCallback(
+            code,
+            state,
+            session.state
+        )
+        return {
+            url: redirectUrl,
+            statusCode: HttpStatus.FOUND,
         }
-        const userInfo = await this.oAuthService.handleOAuth2Callback(
-            AUTH_PROVIDERS.DISCORD,
-            code
-        )
-        const jwt = await this.authService.generateJwt(
-            userInfo.id,
-            AUTH_PROVIDERS.DISCORD
-        )
-        return { jwt }
     }
 }

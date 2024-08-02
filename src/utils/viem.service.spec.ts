@@ -1,17 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { ViemService } from './viem.service'
+import { ViemUtilsService } from './viem.utils.service'
 import { SUPPORTED_CHAIN_IDS } from './constants/viem.constants'
 import * as chains from 'viem/chains'
 
 describe('ViemService', () => {
-    let service: ViemService
+    let service: ViemUtilsService
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            providers: [ViemService],
+            providers: [ViemUtilsService],
         }).compile()
 
-        service = module.get<ViemService>(ViemService)
+        service = module.get<ViemUtilsService>(ViemUtilsService)
     })
 
     it('should be defined', () => {

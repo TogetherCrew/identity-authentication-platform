@@ -7,6 +7,8 @@ import { Logger, LoggerErrorInterceptor } from 'nestjs-pino'
 import * as session from 'express-session'
 import { VersioningType, ValidationPipe } from '@nestjs/common'
 import { setupSwagger } from './doc'
+import { HttpExceptionFilter } from './filters/http-exception.filter'
+
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { bufferLogs: true })
     app.useGlobalPipes(new ValidationPipe())
@@ -15,20 +17,18 @@ async function bootstrap() {
     app.enableCors()
     app.useLogger(app.get(Logger))
     app.useGlobalInterceptors(new LoggerErrorInterceptor())
+    app.useGlobalFilters(new HttpExceptionFilter())
+
     const configService = app.get(ConfigService)
     const port = configService.get('app.port')
+
     app.use(
         session({
             secret: configService.get('app.sessionSecret'),
             resave: false,
             saveUninitialized: false,
-            cookie: {
-                secure: configService.get('app.nodeEnv') === 'production',
-                httpOnly: true,
-            },
         })
     )
-    setupSwagger(app)
 
     app.enableVersioning({
         type: VersioningType.URI,
@@ -36,6 +36,12 @@ async function bootstrap() {
         prefix: 'api/v',
     })
 
-    await app.listen(port)
+    setupSwagger(app)
+
+    await app.listen(port, () => {
+        const logger = app.get(Logger)
+        logger.log(`Server is running on port ${port}!`, 'NestApplication')
+    })
 }
+
 bootstrap()

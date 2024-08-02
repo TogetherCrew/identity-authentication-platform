@@ -3,30 +3,28 @@ import {
     Get,
     Query,
     Redirect,
-    HttpException,
     HttpStatus,
     Session,
 } from '@nestjs/common'
 import {
     ApiTags,
     ApiOperation,
-    ApiOkResponse,
     ApiFoundResponse,
+    ApiOkResponse,
 } from '@nestjs/swagger'
-import { OAuthService } from '../auth/oAuth.service'
-import { AuthService } from '../auth/auth.service'
+import { AuthGoogleService } from './auth-google.service'
 import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto'
-import { CryptoUtilsService } from '../utils/crypto-utils.service'
+import { JwtResponse } from '../auth/dto/jwt-response.dto'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
-import { JwtResponse } from '../auth//dto/jwt-response.dto'
-
-@ApiTags(`${AUTH_PROVIDERS.GOOGLE} Authentication`)
-@Controller(`auth/${AUTH_PROVIDERS.GOOGLE}`)
+import { CryptoUtilsService } from '../utils/crypto-utils.service'
+import { OAuthService } from '../auth/oAuth.service'
+@ApiTags('Google Authentication')
+@Controller('auth/google')
 export class AuthGoogleController {
     constructor(
         private readonly oAuthService: OAuthService,
-        private readonly authService: AuthService,
-        private readonly cryptoService: CryptoUtilsService
+        private readonly cryptoService: CryptoUtilsService,
+        private readonly authGoogleService: AuthGoogleService
     ) {}
 
     @Get('authenticate')
@@ -44,6 +42,7 @@ export class AuthGoogleController {
     }
 
     @Get('authenticate/callback')
+    @Redirect()
     @ApiOperation({ summary: 'Handle Google OAuth callback' })
     @ApiOkResponse({
         description: 'JWT generated successfully.',
@@ -53,17 +52,15 @@ export class AuthGoogleController {
         @Query() { code, state }: HandleOAuthCallback,
         @Session() session: any
     ) {
-        if (!this.cryptoService.validateState(state, session.state)) {
-            throw new HttpException('Invalid state', HttpStatus.FORBIDDEN)
+        const redirectUrl = await this.authGoogleService.handleOAuthCallback(
+            code,
+            state,
+            session.state
+        )
+
+        return {
+            url: redirectUrl,
+            statusCode: HttpStatus.FOUND,
         }
-        const userInfo = await this.oAuthService.handleOAuth2Callback(
-            AUTH_PROVIDERS.GOOGLE,
-            code
-        )
-        const jwt = await this.authService.generateJwt(
-            userInfo.id,
-            AUTH_PROVIDERS.GOOGLE
-        )
-        return { jwt }
     }
 }
