@@ -1,31 +1,41 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common'
+import {
+    Injectable,
+    BadRequestException,
+    Logger,
+    ForbiddenException,
+} from '@nestjs/common'
 import { HttpService } from '@nestjs/axios'
 import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
-
+import * as querystring from 'querystring'
 import { OAUTH_URLS } from './constants/oAuth.constants'
+import { AuthService } from '../auth/auth.service'
+import { CryptoUtilsService } from '../utils/crypto-utils.service'
+import { AuthProvider } from './types/auth-provider.type'
 
 @Injectable()
 export class OAuthService {
     private readonly logger = new Logger(OAuthService.name)
     constructor(
         private readonly httpService: HttpService,
-        private readonly configService: ConfigService
+        private readonly configService: ConfigService,
+        private readonly authService: AuthService,
+        private readonly cryptoService: CryptoUtilsService
     ) {}
 
-    getTokenUrl(provider: string): string {
+    getTokenUrl(provider: AuthProvider): string {
         return OAUTH_URLS[provider].tokenUrl
     }
 
-    getUserInfoUrl(provider: string): string {
+    getUserInfoUrl(provider: AuthProvider): string {
         return OAUTH_URLS[provider].userInfoUrl
     }
 
-    getOAuthBaseURL(provider: string): string {
+    getOAuthBaseURL(provider: AuthProvider): string {
         return OAUTH_URLS[provider].authUrl
     }
 
-    generateRedirectUrl(provider: string, state: string): string {
+    generateRedirectUrl(provider: AuthProvider, state: string): string {
         const params = {
             client_id: this.configService.get<string>(`${provider}.clientId`),
             redirect_uri: this.configService.get<string>(
@@ -41,7 +51,7 @@ export class OAuthService {
     }
 
     async exchangeCodeForToken(
-        provider: string,
+        provider: AuthProvider,
         code: string
     ): Promise<{ access_token: string }> {
         const clientId = this.configService.get<string>(`${provider}.clientId`)
@@ -61,7 +71,6 @@ export class OAuthService {
         }).toString()
 
         const tokenUrl = this.getTokenUrl(provider)
-
         try {
             const response = await lastValueFrom(
                 this.httpService.post(tokenUrl, params, {
@@ -72,13 +81,20 @@ export class OAuthService {
             )
             return response.data
         } catch (error) {
+            this.logger.error(
+                `Failed to exchange ${provider} code for token`,
+                error
+            )
             throw new BadRequestException(
                 `Failed to exchange ${provider} code for token`
             )
         }
     }
 
-    async getUserInfo(provider: string, accessToken: string): Promise<any> {
+    async getUserInfo(
+        provider: AuthProvider,
+        accessToken: string
+    ): Promise<any> {
         const userInfoUrl = this.getUserInfoUrl(provider)
 
         try {
@@ -89,21 +105,45 @@ export class OAuthService {
             )
             return response.data
         } catch (error) {
+            this.logger.error(
+                `Failed to retrieve user information from ${provider}`,
+                error
+            )
             throw new BadRequestException(
                 `Failed to retrieve user information from ${provider}`
             )
         }
     }
 
-    async handleOAuth2Callback(provider: string, code: string): Promise<any> {
+    async handleOAuth2Callback(
+        state: string,
+        sessionState: string,
+        code: string,
+        provider: AuthProvider
+    ) {
         try {
+            if (!this.cryptoService.validateState(state, sessionState)) {
+                throw new ForbiddenException('Invalid state')
+            }
             const tokenData = await this.exchangeCodeForToken(provider, code)
+
             const userInfo = await this.getUserInfo(
                 provider,
                 tokenData.access_token
             )
-            return userInfo
+            const jwt = await this.authService.generateJwt(
+                userInfo.id,
+                provider
+            )
+            const frontendUrl =
+                this.configService.get<string>('app.frontEndURL')
+            const params = querystring.stringify({ jwt })
+            return `${frontendUrl}/callback?${params}`
         } catch (error) {
+            this.logger.error(
+                `Failed to handle ${provider} OAuth2 callback`,
+                error
+            )
             throw new BadRequestException(
                 `Failed to handle ${provider} OAuth2 callback`
             )
