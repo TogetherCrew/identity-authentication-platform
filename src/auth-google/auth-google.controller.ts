@@ -12,19 +12,17 @@ import {
     ApiFoundResponse,
     ApiOkResponse,
 } from '@nestjs/swagger'
-import { AuthGoogleService } from './auth-google.service'
 import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto'
 import { JwtResponse } from '../auth/dto/jwt-response.dto'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { OAuthService } from '../auth/oAuth.service'
-@ApiTags('Google Authentication')
-@Controller('auth/google')
+@ApiTags(`${AUTH_PROVIDERS.GOOGLE} Authentication`)
+@Controller(`auth/${AUTH_PROVIDERS.GOOGLE}`)
 export class AuthGoogleController {
     constructor(
         private readonly oAuthService: OAuthService,
-        private readonly cryptoService: CryptoUtilsService,
-        private readonly authGoogleService: AuthGoogleService
+        private readonly cryptoService: CryptoUtilsService
     ) {}
 
     @Get('authenticate')
@@ -52,10 +50,11 @@ export class AuthGoogleController {
         @Query() { code, state }: HandleOAuthCallback,
         @Session() session: any
     ) {
-        const redirectUrl = await this.authGoogleService.handleOAuthCallback(
-            code,
+        const redirectUrl = await this.oAuthService.handleOAuth2Callback(
             state,
-            session.state
+            session.state,
+            code,
+            AUTH_PROVIDERS.GOOGLE
         )
 
         return {
