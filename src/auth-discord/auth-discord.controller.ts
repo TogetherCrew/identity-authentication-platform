@@ -17,15 +17,13 @@ import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 import { JwtResponse } from '../auth//dto/jwt-response.dto'
-import { AuthDiscordService } from './auth-discord.service'
 
 @ApiTags(`${AUTH_PROVIDERS.DISCORD} Authentication`)
 @Controller(`auth/${AUTH_PROVIDERS.DISCORD}`)
 export class AuthDiscordController {
     constructor(
         private readonly oAuthService: OAuthService,
-        private readonly cryptoService: CryptoUtilsService,
-        private readonly authDiscordService: AuthDiscordService
+        private readonly cryptoService: CryptoUtilsService
     ) {}
 
     @Get('authenticate')
@@ -53,10 +51,11 @@ export class AuthDiscordController {
         @Query() { code, state }: HandleOAuthCallback,
         @Session() session: any
     ) {
-        const redirectUrl = await this.authDiscordService.handleOAuthCallback(
-            code,
+        const redirectUrl = await this.oAuthService.handleOAuth2Callback(
             state,
-            session.state
+            session.state,
+            code,
+            AUTH_PROVIDERS.DISCORD
         )
         return {
             url: redirectUrl,
