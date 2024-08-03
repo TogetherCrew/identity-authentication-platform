@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { AuthService } from '../auth/auth.service'
 import { ViemUtilsService } from '../utils/viem.utils.service'
 import { LinkIdentitiesDto } from './dto/link-identities.dto'
-import { EasService } from '../EAS/eas.service'
+import { EasService } from '../eas/eas.service'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 
 @ApiTags(`Linking`)

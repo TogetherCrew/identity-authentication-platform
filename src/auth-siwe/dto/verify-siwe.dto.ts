@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsString, IsNotEmpty, IsNumber, IsIn } from 'class-validator'
-import { SUPPORTED_CHAIN_IDS } from '../../utils/constants/viem.constants'
 import { SignMessageReturnType, Hex } from 'viem'
+import { SUPPORTED_CHAIN_IDS } from '../../constants/chain.constants'
+
 export class VerifySiweDto {
     @ApiProperty({
         description: 'The SIWE message sent by the client.',
