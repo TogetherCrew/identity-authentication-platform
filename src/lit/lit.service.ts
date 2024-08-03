@@ -10,8 +10,8 @@ import {
 import { ConfigService } from '@nestjs/config'
 import { networkConfigs } from './constants/network.constants'
 import { EvmContractConditions } from '@lit-protocol/types'
-import { SUPPORTED_CHAINS } from '../../constants/chain.constants'
-import { SupportedChainId, LitChain } from '../../types/chain.type'
+import { SUPPORTED_CHAINS } from '../constants/chain.constants'
+import { SupportedChainId, LitChain } from '../types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
 
 @Injectable()
