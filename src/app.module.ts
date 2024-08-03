@@ -8,6 +8,7 @@ import { AuthSiweModule } from './auth-siwe/auth-siwe.module'
 import { configModules, configValidationSchema } from './config'
 import { pinoConfig } from './config/pino.config'
 import { LinkingModule } from './linking/linking.module'
+import { LitModule } from './lit/lit.module'
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { LinkingModule } from './linking/linking.module'
         AuthGoogleModule,
         AuthSiweModule,
         LinkingModule,
+        LitModule,
     ],
     controllers: [],
     providers: [],
