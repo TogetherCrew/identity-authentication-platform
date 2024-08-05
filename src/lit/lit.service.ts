@@ -13,7 +13,7 @@ import { EvmContractConditions } from '@lit-protocol/types'
 import { SUPPORTED_CHAINS } from '../constants/chain.constants'
 import { SupportedChainId, LitChain } from '../types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
-
+import { Address, keccak256, toHex } from 'viem'
 @Injectable()
 export class LitService {
     private readonly logger = new Logger(LitService.name)
@@ -81,13 +81,14 @@ export class LitService {
         }
     }
     generateEvmContractConditions(
-        chainId: SupportedChainId
+        chainId: SupportedChainId,
+        id: Address
     ): EvmContractConditions {
         return [
             {
                 contractAddress: this.getContractAddress(chainId),
                 functionName: this.getContractFunctionName(chainId),
-                functionParams: ['name', ':userAddress'],
+                functionParams: [keccak256(toHex(id)), ':userAddress'],
                 functionAbi: this.getContractAbi(chainId),
                 chain: this.chainIdToLitChainName(chainId),
                 returnValueTest: {
@@ -101,21 +102,23 @@ export class LitService {
 
     async encrypt(
         chainId: SupportedChainId,
-        dataToEncrypt: any
-    ): Promise<void> {
-        const evmContractConditions =
-            this.generateEvmContractConditions(chainId)
+        dataToEncrypt: any,
+        userAddress: Address
+    ): Promise<string> {
+        const evmContractConditions = this.generateEvmContractConditions(
+            chainId,
+            userAddress
+        )
         if (!this.litNodeClient) {
             await this.connect()
         }
         try {
-            const encryptResponse = await encryptToJson({
+            return await encryptToJson({
                 string: JSON.stringify(dataToEncrypt),
                 evmContractConditions,
                 litNodeClient: this.litNodeClient,
                 chain: this.chainIdToLitChainName(chainId),
             })
-            this.logger.log(encryptResponse)
         } catch (error) {
             this.logger.error(`Failed to encrypt data`, error)
             throw new InternalServerErrorException(`Failed to encrypt data`)

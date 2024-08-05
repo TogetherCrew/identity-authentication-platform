@@ -10,7 +10,7 @@ export class LinkIdentitiesDto {
     })
     @IsString()
     @IsNotEmpty()
-    readonly walletJwt: string
+    readonly siweJwt: string
 
     @ApiProperty({
         description: 'The wallet JWT or any provider JWT.',

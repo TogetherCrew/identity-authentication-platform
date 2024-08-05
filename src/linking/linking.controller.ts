@@ -4,7 +4,8 @@ import { AuthService } from '../auth/auth.service'
 import { ViemUtilsService } from '../utils/viem.utils.service'
 import { LinkIdentitiesDto } from './dto/link-identities.dto'
 import { EasService } from '../eas/eas.service'
-import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
+import { LitService } from 'src/lit/lit.service'
+import { keccak256, toHex } from 'viem'
 
 @ApiTags(`Linking`)
 @Controller(`linking`)
@@ -12,7 +13,8 @@ export class LinkingController {
     constructor(
         private readonly authService: AuthService,
         private readonly viemUtilsService: ViemUtilsService,
-        private readonly easService: EasService
+        private readonly easService: EasService,
+        private readonly litService: LitService
     ) {}
 
     @Post('link-identities')
@@ -23,27 +25,48 @@ export class LinkingController {
     })
     @HttpCode(HttpStatus.OK)
     async linkIdentities(@Body() linkIdentitiesDto: LinkIdentitiesDto) {
-        const { chainId } = linkIdentitiesDto
+        const { chainId, anyJwt, siweJwt } = linkIdentitiesDto
         // TODO: Check the jwt payloads
-        // const walletJwtPayload = await this.authService.validateToken(walletJwt)
-        // const anyJwtPayload = await this.authService.validateToken(anyJwt)
-        // await this.easService.getDelegatedAttestationRequest(
+        const siweJwtPayload = await this.authService.validateToken(siweJwt)
+        const anyJwtPayload = await this.authService.validateToken(anyJwt)
+        const secret = await this.litService.encrypt(
+            chainId,
+            {
+                id: anyJwtPayload.sub,
+                provider: anyJwtPayload.provider,
+            },
+            siweJwtPayload.sub as '0x${string}'
+        )
+        const delegatedAttestationRequest =
+            await this.easService.getDelegatedAttestationRequest(
+                chainId,
+                [
+                    keccak256(toHex(anyJwtPayload.sub)),
+                    anyJwtPayload.provider,
+                    secret,
+                ],
+                siweJwtPayload.sub as '0x${string}'
+            )
+
+        // const userAccount = privateKeyToAccount(generatePrivateKey())
+        // const secret = await this.litService.encrypt(
         //     chainId,
-        //     ['hash', 'provider', 'secret'],
-        //     walletJwtPayload.sub as '0x${string}'
+        //     {
+        //         id: anyJwtPayload.sub,
+        //         provider: anyJwtPayload.provider,
+        //     },
+        //     userAccount.address
+        // )
+        // const request = await this.easService.getDelegatedAttestationRequest(
+        //     chainId,
+        //     [
+        //         keccak256(toHex(anyJwtPayload.sub)),
+        //         anyJwtPayload.provider,
+        //         secret,
+        //     ],
+        //     userAccount.address
         // )
 
-        const userAccount = privateKeyToAccount(generatePrivateKey())
-        const request = await this.easService.getDelegatedAttestationRequest(
-            chainId,
-            [
-                '0x41570bc46b81fc88ef12a6077dd640aa9ec7a2d0b00b4919d151d495a0590938',
-                'provider',
-                'secret',
-            ],
-            userAccount.address
-        )
-
-        console.log(request)
+        console.log(delegatedAttestationRequest)
     }
 }
