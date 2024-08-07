@@ -1,11 +1,12 @@
 export const SUPPORTED_CHAINS = [
     {
         chainId: 11155111,
-        easContractAddress: '0xC2679fBD37d54388Ce493F1DB75320D236e1815e',
-        schemaUUID:
+        easSchemaUUID:
             '0x85e90e3e16d319578888790af3284fea8bca549305071531e7478e3e0b5e7d6d',
 
-        abi: [
+        easContractAddress: '0xC2679fBD37d54388Ce493F1DB75320D236e1815e',
+
+        easContractAbi: [
             {
                 inputs: [
                     {
@@ -843,5 +844,28 @@ export const SUPPORTED_CHAINS = [
                 type: 'function',
             },
         ],
+
+        permissionManagerContractAddress:
+            '0x787aeDd9Fb3e16EeF5b00C0F35f105daD2A1aA15',
+
+        permissionManagerContractFunctionName: 'hasPermission',
+        permissionManagerContractAbi: {
+            inputs: [
+                { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
+                {
+                    internalType: 'address',
+                    name: 'account',
+                    type: 'address',
+                },
+            ],
+            name: 'hasPermission',
+            outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+            stateMutability: 'view',
+            type: 'function',
+        },
     },
 ]
+
+export const SUPPORTED_CHAIN_IDS = SUPPORTED_CHAINS.map(
+    (chain) => chain.chainId
+)

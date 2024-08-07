@@ -1,9 +1,9 @@
 import {
     Injectable,
     BadRequestException,
-    Logger,
     ForbiddenException,
 } from '@nestjs/common'
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
 import { HttpService } from '@nestjs/axios'
 import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
@@ -15,12 +15,13 @@ import { AuthProvider } from './types/auth-provider.type'
 
 @Injectable()
 export class OAuthService {
-    private readonly logger = new Logger(OAuthService.name)
     constructor(
         private readonly httpService: HttpService,
         private readonly configService: ConfigService,
         private readonly authService: AuthService,
-        private readonly cryptoService: CryptoUtilsService
+        private readonly cryptoService: CryptoUtilsService,
+        @InjectPinoLogger(OAuthService.name)
+        private readonly logger: PinoLogger
     ) {}
 
     getTokenUrl(provider: AuthProvider): string {
@@ -82,8 +83,13 @@ export class OAuthService {
             return response.data
         } catch (error) {
             this.logger.error(
-                `Failed to exchange ${provider} code for token`,
-                error
+                {
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                    response: error.response?.data,
+                },
+                `Failed to exchange ${provider} code for token`
             )
             throw new BadRequestException(
                 `Failed to exchange ${provider} code for token`
@@ -106,8 +112,13 @@ export class OAuthService {
             return response.data
         } catch (error) {
             this.logger.error(
-                `Failed to retrieve user information from ${provider}`,
-                error
+                {
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                    response: error.response?.data,
+                },
+                `Failed to retrieve user information from ${provider}`
             )
             throw new BadRequestException(
                 `Failed to retrieve user information from ${provider}`
@@ -121,32 +132,18 @@ export class OAuthService {
         code: string,
         provider: AuthProvider
     ) {
-        try {
-            if (!this.cryptoService.validateState(state, sessionState)) {
-                throw new ForbiddenException('Invalid state')
-            }
-            const tokenData = await this.exchangeCodeForToken(provider, code)
-
-            const userInfo = await this.getUserInfo(
-                provider,
-                tokenData.access_token
-            )
-            const jwt = await this.authService.generateJwt(
-                userInfo.id,
-                provider
-            )
-            const frontendUrl =
-                this.configService.get<string>('app.frontEndURL')
-            const params = querystring.stringify({ jwt })
-            return `${frontendUrl}/callback?${params}`
-        } catch (error) {
-            this.logger.error(
-                `Failed to handle ${provider} OAuth2 callback`,
-                error
-            )
-            throw new BadRequestException(
-                `Failed to handle ${provider} OAuth2 callback`
-            )
+        if (!this.cryptoService.validateState(state, sessionState)) {
+            throw new ForbiddenException('Invalid state')
         }
+        const tokenData = await this.exchangeCodeForToken(provider, code)
+
+        const userInfo = await this.getUserInfo(
+            provider,
+            tokenData.access_token
+        )
+        const jwt = await this.authService.generateJwt(userInfo.id, provider)
+        const frontendUrl = this.configService.get<string>('app.frontEndURL')
+        const params = querystring.stringify({ jwt })
+        return `${frontendUrl}/callback?${params}`
     }
 }

@@ -1,18 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { SiweService } from './siwe.service'
 import { ViemUtilsService } from '../utils/viem.utils.service'
+import { PinoLogger, LoggerModule } from 'nestjs-pino'
 import { HttpException } from '@nestjs/common'
 
 describe('SiweService', () => {
     let service: SiweService
     let publicClientMock: { verifySiweMessage: jest.Mock }
+    let loggerMock: PinoLogger
 
     beforeEach(async () => {
         publicClientMock = {
             verifySiweMessage: jest.fn(),
         }
 
+        loggerMock = { error: jest.fn() } as unknown as PinoLogger
+
         const module: TestingModule = await Test.createTestingModule({
+            imports: [LoggerModule.forRoot()],
             providers: [
                 SiweService,
                 {
@@ -22,6 +27,10 @@ describe('SiweService', () => {
                             .fn()
                             .mockReturnValue(publicClientMock),
                     },
+                },
+                {
+                    provide: PinoLogger,
+                    useValue: loggerMock,
                 },
             ],
         }).compile()

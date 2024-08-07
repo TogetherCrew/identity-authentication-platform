@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
+import { SUPPORTED_CHAIN_IDS } from '../shared/constants/chain.constants'
+import { SupportedChainId } from '../shared/types/chain.type'
 import { createPublicClient, http, Client } from 'viem'
-import { SUPPORTED_CHAIN_IDS } from './constants/viem.constants'
 import * as chains from 'viem/chains'
-
 @Injectable()
 export class ViemUtilsService {
     private publicClients: Map<number, any>
@@ -25,11 +25,11 @@ export class ViemUtilsService {
         }
     }
 
-    getPublicClient(chainId: number) {
+    getPublicClient(chainId: SupportedChainId) {
         return this.publicClients.get(chainId)
     }
 
-    idToChain(chainId: number) {
+    idToChain(chainId: SupportedChainId) {
         for (const chain of Object.values(chains)) {
             if ('id' in chain) {
                 if (chain.id === chainId) {

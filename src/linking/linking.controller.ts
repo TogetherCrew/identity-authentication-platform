@@ -1,18 +1,20 @@
 import { Controller, Post, Body, HttpStatus, HttpCode } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { AuthService } from '../auth/auth.service'
-import { ViemUtilsService } from '../utils/viem.utils.service'
 import { LinkIdentitiesDto } from './dto/link-identities.dto'
-import { EasService } from '../EAS/eas.service'
-import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
+import { EasService } from '../eas/eas.service'
+import { LitService } from 'src/lit/lit.service'
+import { keccak256, toHex } from 'viem'
+import { DataUtilsService } from 'src/utils/data-utils.service'
 
 @ApiTags(`Linking`)
 @Controller(`linking`)
 export class LinkingController {
     constructor(
         private readonly authService: AuthService,
-        private readonly viemUtilsService: ViemUtilsService,
-        private readonly easService: EasService
+        private readonly easService: EasService,
+        private readonly litService: LitService,
+        private readonly dataUtilsService: DataUtilsService
     ) {}
 
     @Post('link-identities')
@@ -23,27 +25,30 @@ export class LinkingController {
     })
     @HttpCode(HttpStatus.OK)
     async linkIdentities(@Body() linkIdentitiesDto: LinkIdentitiesDto) {
-        const { chainId } = linkIdentitiesDto
-        // TODO: Check the jwt payloads
-        // const walletJwtPayload = await this.authService.validateToken(walletJwt)
-        // const anyJwtPayload = await this.authService.validateToken(anyJwt)
-        // await this.easService.getDelegatedAttestationRequest(
-        //     chainId,
-        //     ['hash', 'provider', 'secret'],
-        //     walletJwtPayload.sub as '0x${string}'
-        // )
-
-        const userAccount = privateKeyToAccount(generatePrivateKey())
-        const request = await this.easService.getDelegatedAttestationRequest(
+        const { chainId, anyJwt, siweJwt } = linkIdentitiesDto
+        const siweJwtPayload = await this.authService.validateToken(siweJwt)
+        const anyJwtPayload = await this.authService.validateToken(anyJwt)
+        const secret = await this.litService.encrypt(
             chainId,
-            [
-                '0x41570bc46b81fc88ef12a6077dd640aa9ec7a2d0b00b4919d151d495a0590938',
-                'provider',
-                'secret',
-            ],
-            userAccount.address
+            {
+                id: anyJwtPayload.sub,
+                provider: anyJwtPayload.provider,
+            },
+            siweJwtPayload.sub as '0x${string}'
         )
+        const delegatedAttestationRequest =
+            await this.easService.getDelegatedAttestationRequest(
+                chainId,
+                [
+                    keccak256(toHex(anyJwtPayload.sub)),
+                    anyJwtPayload.provider,
+                    secret,
+                ],
+                siweJwtPayload.sub as '0x${string}'
+            )
 
-        console.log(request)
+        return this.dataUtilsService.formatBigIntValues(
+            delegatedAttestationRequest
+        )
     }
 }

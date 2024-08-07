@@ -1,10 +1,11 @@
 import { ConfigService } from '@nestjs/config'
-
 export const pinoConfig = (configService: ConfigService) => {
     const nodeEnv = configService.get('app.nodeEnv')
+    const logLevel = configService.get('logger.level')
+
     return {
         pinoHttp: {
-            level: nodeEnv !== 'production' ? 'debug' : 'info',
+            level: logLevel,
             transport:
                 nodeEnv !== 'production'
                     ? {

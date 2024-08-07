@@ -13,7 +13,7 @@ import {
     EncodeAbiParametersReturnType,
 } from 'viem'
 import { privateKeyToAccount, Account } from 'viem/accounts'
-import { SUPPORTED_CHAINS } from './constants/chain.constants'
+import { SUPPORTED_CHAINS } from '../shared/constants/chain.constants'
 import {
     IAttestationRequestData,
     IDelegatedAttestationRequest,
@@ -23,6 +23,8 @@ import {
     NO_EXPIRATION,
     ZERO_BYTES32,
 } from '@ethereum-attestation-service/eas-sdk'
+import { SupportedChainId } from '../shared/types/chain.type'
+
 @Injectable()
 export class EasService {
     private attester: Account
@@ -45,7 +47,7 @@ export class EasService {
             if (publicClient) {
                 const easContract = getContract({
                     address: chain.easContractAddress as '0x${string}',
-                    abi: chain.abi,
+                    abi: chain.easContractAbi,
                     client: publicClient,
                 })
                 this.easContracts.set(chain.chainId, easContract)
@@ -53,20 +55,20 @@ export class EasService {
         }
     }
 
-    getEasContract(chainId: number) {
+    getContract(chainId: SupportedChainId) {
         return this.easContracts.get(chainId)
     }
 
-    getSchemaUUID(chainId: number): '0x${string}' {
+    getSchemaUUID(chainId: SupportedChainId): '0x${string}' {
         const chain = SUPPORTED_CHAINS.find(
             (chain) => chain.chainId === chainId
         )
         if (!chain) {
             throw new Error(`Unsupported chain ID: ${chainId}`)
         }
-        return chain.schemaUUID as '0x${string}'
+        return chain.easSchemaUUID as '0x${string}'
     }
-    getEasContractAddress(chainId: number): '0x${string}' {
+    getContractAddress(chainId: SupportedChainId): '0x${string}' {
         const chain = SUPPORTED_CHAINS.find(
             (chain) => chain.chainId === chainId
         )
@@ -75,18 +77,18 @@ export class EasService {
         }
         return chain.easContractAddress as '0x${string}'
     }
-    getContractABI(chainId: number) {
+    getContractABI(chainId: SupportedChainId) {
         const chain = SUPPORTED_CHAINS.find(
             (chain) => chain.chainId === chainId
         )
         if (!chain) {
             throw new Error(`Unsupported chain ID: ${chainId}`)
         }
-        return chain.abi
+        return chain.easContractAbi
     }
 
-    async getDomain(chainId: number) {
-        const eas = await this.getEasContract(chainId)
+    async getDomain(chainId: SupportedChainId) {
+        const eas = await this.getContract(chainId)
         if (!eas) {
             throw new Error(`EAS contract not found for chain ID: ${chainId}`)
         }
@@ -98,8 +100,8 @@ export class EasService {
         }
     }
 
-    async getNounce(chainId: number) {
-        const eas = await this.getEasContract(chainId)
+    async getNounce(chainId: SupportedChainId) {
+        const eas = await this.getContract(chainId)
         if (!eas) {
             throw new Error(`EAS contract not found for chain ID: ${chainId}`)
         }
@@ -123,7 +125,7 @@ export class EasService {
 
     createDelegatedAttestationRequest(
         requestData: IAttestationRequestData,
-        chainId: number,
+        chainId: SupportedChainId,
         signature: '0x${string}'
     ): IDelegatedAttestationRequest {
         const { r, s, v } = parseSignature(signature)
@@ -138,7 +140,7 @@ export class EasService {
     }
     createAttestationMessage(
         requestData: IAttestationRequestData,
-        chainId: number,
+        chainId: SupportedChainId,
         nonce: any
     ): IDelegatedAttestationMessage {
         const message: IDelegatedAttestationMessage = {
@@ -178,7 +180,7 @@ export class EasService {
         return signature
     }
     async getDelegatedAttestationRequest(
-        chainId: number,
+        chainId: SupportedChainId,
         params,
         recipient: Address
     ) {
