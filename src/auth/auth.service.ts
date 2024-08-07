@@ -20,10 +20,6 @@ export class AuthService {
         }) as JwtPayload
     }
 
-    async decodeToken(token: string): Promise<JwtPayload> {
-        return jwt.decode(token) as JwtPayload
-    }
-
     async generateJwt(identifier: string, provider: string): Promise<string> {
         const now = moment().unix()
         const expiration = moment()

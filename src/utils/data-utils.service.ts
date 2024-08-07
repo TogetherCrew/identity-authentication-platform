@@ -7,7 +7,6 @@ export class DataUtilsService {
             return obj
         } else if (typeof obj === 'bigint') {
             const number = Number(obj)
-            // Check if the number is within safe integer range
             if (Number.isSafeInteger(number)) {
                 return number
             }

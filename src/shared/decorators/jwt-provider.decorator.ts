@@ -3,7 +3,7 @@ import {
     ValidationOptions,
     ValidationArguments,
 } from 'class-validator'
-import * as jwt from 'jsonwebtoken'
+import { decode } from 'jsonwebtoken'
 
 export function JwtProvider(
     expectedProvider: string,
@@ -18,7 +18,7 @@ export function JwtProvider(
             validator: {
                 validate(value: any) {
                     try {
-                        const decoded = jwt.decode(value)
+                        const decoded = decode(value)
                         if (decoded['provider'] === expectedProvider) {
                             return true
                         }
