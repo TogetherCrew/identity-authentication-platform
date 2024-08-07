@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ViemUtilsService } from './viem.utils.service'
-import { SUPPORTED_CHAIN_IDS } from '../constants/chain.constants'
+import { SUPPORTED_CHAIN_IDS } from '../shared/constants/chain.constants'
 import * as chains from 'viem/chains'
 
 describe('ViemService', () => {

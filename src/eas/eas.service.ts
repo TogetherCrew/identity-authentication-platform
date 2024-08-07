@@ -13,7 +13,7 @@ import {
     EncodeAbiParametersReturnType,
 } from 'viem'
 import { privateKeyToAccount, Account } from 'viem/accounts'
-import { SUPPORTED_CHAINS } from '../constants/chain.constants'
+import { SUPPORTED_CHAINS } from '../shared/constants/chain.constants'
 import {
     IAttestationRequestData,
     IDelegatedAttestationRequest,
@@ -23,7 +23,7 @@ import {
     NO_EXPIRATION,
     ZERO_BYTES32,
 } from '@ethereum-attestation-service/eas-sdk'
-import { SupportedChainId } from '../types/chain.type'
+import { SupportedChainId } from '../shared/types/chain.type'
 
 @Injectable()
 export class EasService {

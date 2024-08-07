@@ -11,13 +11,13 @@ import { HttpExceptionFilter } from './filters/http-exception.filter'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { bufferLogs: true })
+    app.useLogger(app.get(Logger))
+    app.useGlobalInterceptors(new LoggerErrorInterceptor())
+    app.useGlobalFilters(new HttpExceptionFilter())
     app.useGlobalPipes(new ValidationPipe())
     app.use(helmet())
     app.use(compression())
     app.enableCors()
-    app.useLogger(app.get(Logger))
-    app.useGlobalInterceptors(new LoggerErrorInterceptor())
-    app.useGlobalFilters(new HttpExceptionFilter())
 
     const configService = app.get(ConfigService)
     const port = configService.get('app.port')

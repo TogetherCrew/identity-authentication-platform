@@ -7,9 +7,11 @@ import { AxiosResponse } from 'axios'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { AuthService } from './auth.service'
 import { AUTH_PROVIDERS } from './constants/provider.constants'
+import { PinoLogger, LoggerModule } from 'nestjs-pino'
 
 describe('OAuthService', () => {
     let service: OAuthService
+    let loggerMock: PinoLogger
 
     const mockHttpService = {
         post: jest.fn().mockImplementation(() =>
@@ -53,12 +55,14 @@ describe('OAuthService', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
+            imports: [LoggerModule.forRoot()],
             providers: [
                 OAuthService,
                 { provide: AuthService, useValue: mockAuthService },
                 { provide: HttpService, useValue: mockHttpService },
                 { provide: ConfigService, useValue: mockConfigService },
                 { provide: CryptoUtilsService, useValue: mockCryptoService },
+                { provide: PinoLogger, useValue: loggerMock },
             ],
         }).compile()
 

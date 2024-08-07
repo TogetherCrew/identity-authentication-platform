@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { SUPPORTED_CHAIN_IDS } from '../constants/chain.constants'
-import { SupportedChainId } from '../types/chain.type'
+import { SUPPORTED_CHAIN_IDS } from '../shared/constants/chain.constants'
+import { SupportedChainId } from '../shared/types/chain.type'
 import { createPublicClient, http, Client } from 'viem'
 import * as chains from 'viem/chains'
 @Injectable()

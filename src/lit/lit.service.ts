@@ -10,10 +10,11 @@ import {
 import { ConfigService } from '@nestjs/config'
 import { networkConfigs } from './constants/network.constants'
 import { EvmContractConditions } from '@lit-protocol/types'
-import { SUPPORTED_CHAINS } from '../constants/chain.constants'
-import { SupportedChainId, LitChain } from '../types/chain.type'
+import { SUPPORTED_CHAINS } from '../shared/constants/chain.constants'
+import { SupportedChainId, LitChain } from '../shared/types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
 import { Address, keccak256, toHex } from 'viem'
+
 @Injectable()
 export class LitService {
     private readonly logger = new Logger(LitService.name)
