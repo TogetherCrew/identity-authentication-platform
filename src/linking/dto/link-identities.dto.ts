@@ -12,7 +12,7 @@ export class LinkIdentitiesDto {
     })
     @IsString()
     @IsNotEmpty()
-    @JwtProvider(AUTH_PROVIDERS.DISCORD)
+    @JwtProvider(AUTH_PROVIDERS.SIWE)
     readonly siweJwt: string
 
     @ApiProperty({
