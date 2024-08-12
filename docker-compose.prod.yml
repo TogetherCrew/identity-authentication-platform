@@ -10,14 +10,14 @@ services:
             - NODE_ENV=production
             - PORT=3000
             - DISCORD_CLIENT_ID=x
-            - DISCORD_CLIENT_SECRET=-x
+            - DISCORD_CLIENT_SECRET=-http://localhost:4000/api/v1/auth/discord/authenticate/callback
             - DISCORD_REDIRECT_URI=x
             - GOOGLE_CLIENT_ID=x
             - GOOGLE_CLIENT_SECRET=x
-            - GOOGLE_REDIRECT_URI=x
+            - GOOGLE_REDIRECT_URI=http://localhost:4000/api/v1/auth/google/authenticate/callback
             - SESSION_SECRET=x
             - JWT_SECRET=x
-            - WALLET_PRIVATE_KEY=0x85167e00aeed1db6a59945f1f78f997856e2e312cf4e55cde90b740b71f9808c
+            - WALLET_PRIVATE_KEY=x
             - WALLET_PUBLIC_KEY=x
             - LOG_LEVEL=info
             - FRONTEND_URL=http://localhost:3000
