@@ -40,7 +40,7 @@ async function bootstrap() {
 
     await app.listen(port, () => {
         const logger = app.get(Logger)
-        logger.log(`Server is running on port ${port}...`, 'NestApplication')
+        logger.log(`Server is running on port ${port}..`, 'NestApplication')
     })
 }
 
