@@ -1,25 +1,13 @@
 {
-  "moduleFileExtensions": [
-    "js",
-    "json",
-    "ts"
-  ],
-  "rootDir": ".",
-  "testRegex": ".*\\.spec\\.ts$",
-  "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
-  },
-  "collectCoverage": true,
-  "collectCoverageFrom": [
-    "**/*.(t|j)s"
-  ],
-  "coverageDirectory": "./coverage",
-  "coverageReporters": [
-    "json",
-    "lcov",
-    "text",
-    "clover",
-    "html"
-  ],
-  "testEnvironment": "node"
+    "moduleFileExtensions": ["js", "json", "ts"],
+    "rootDir": ".",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+        "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverage": true,
+    "collectCoverageFrom": ["src/**/*.ts*"],
+    "coverageDirectory": "./coverage",
+    "coverageReporters": ["json", "lcov", "text", "clover", "html"],
+    "testEnvironment": "node"
 }

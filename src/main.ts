@@ -7,7 +7,7 @@ import { Logger, LoggerErrorInterceptor } from 'nestjs-pino'
 import * as session from 'express-session'
 import { VersioningType, ValidationPipe } from '@nestjs/common'
 import { setupSwagger } from './doc'
-import { HttpExceptionFilter } from './filters/http-exception.filter'
+import { HttpExceptionFilter } from './shared/filters/http-exception.filter'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { bufferLogs: true })

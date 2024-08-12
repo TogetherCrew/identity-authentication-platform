@@ -16,12 +16,11 @@ EXPOSE 3000
 CMD ["npm", "run", "start:dev"]
 
 # Stage 3: Production
-FROM node:20-alpine AS production
+FROM node:20-alpine AS production 
 WORKDIR /app
 COPY --from=builder /app .
 COPY . .
-RUN npm install 
-# --omit=dev
+RUN npm install --only=production --ignore-scripts
 EXPOSE 3000
 CMD ["node", "dist/main"]
 
