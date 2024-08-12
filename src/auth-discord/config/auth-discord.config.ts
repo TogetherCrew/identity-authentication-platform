@@ -17,6 +17,7 @@ export const discordConfigSchema = {
         .required()
         .description('Discord client secret'),
     DISCORD_REDIRECT_URI: Joi.string()
+        .uri()
         .required()
         .description('Discord redirect URI after OAuth'),
     DISCORD_SCOPES: Joi.string()
