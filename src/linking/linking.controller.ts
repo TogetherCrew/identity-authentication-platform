@@ -34,15 +34,15 @@ export class LinkingController {
 
         const anyJwtPayload = await this.authService.validateToken(anyJwt)
         const secret = 'secret'
-        // await this.litService.encrypt(
-        //     chainId,
-        //     {
-        //         id: anyJwtPayload.sub,
-        //         provider: anyJwtPayload.provider,
-        //     },
-        //     address
-        //     // siweJwtPayload.sub as '0x${string}'
-        // )
+        await this.litService.encrypt(
+            chainId,
+            {
+                id: anyJwtPayload.sub,
+                provider: anyJwtPayload.provider,
+            },
+            address
+            // siweJwtPayload.sub as '0x${string}'
+        )
         const delegatedAttestationRequest =
             await this.easService.getDelegatedAttestationRequest(
                 chainId,

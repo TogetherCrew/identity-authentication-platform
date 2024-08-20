@@ -19,7 +19,7 @@ import { Address, keccak256, toHex } from 'viem'
 export class LitService {
     private readonly logger = new Logger(LitService.name)
     private litNodeClient: LitNodeClientNodeJs = null
-    constructor(private readonly configService: ConfigService) {}
+    constructor(private readonly configService: ConfigService) { }
 
     async connect() {
         const networkConfig = this.getNetworkConfig(

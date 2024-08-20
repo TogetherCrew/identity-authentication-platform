@@ -225,11 +225,11 @@ export class EasService {
         const encodedData = schemaEncoder.encodeData([
             {
                 name: 'key',
-                value: stringToHex('Hello World!', { size: 32 }),
+                value: params[0],
                 type: 'bytes32',
             }, // TODO: replace with key
-            { name: 'provider', value: 'google', type: 'string' },
-            { name: 'secret', value: 'my secret', type: 'string' },
+            { name: 'provider', value: params[1], type: 'string' },
+            { name: 'secret', value: params[2], type: 'string' },
         ])
 
         // console.log(encodedData)
