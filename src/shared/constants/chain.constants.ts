@@ -869,3 +869,21 @@ export const SUPPORTED_CHAINS = [
 export const SUPPORTED_CHAIN_IDS = SUPPORTED_CHAINS.map(
     (chain) => chain.chainId
 )
+
+// export const SUPPORTED_CHAIN_IDS = []
+
+// export const EAS_CONTRACTS = {
+//     11155111: {
+//         contractAddress: '',
+//         abi: [],
+//         metadata: {
+//             schema: '0x85e90e3e16d319578888790af3284fea8bca549305071531e7478e3e0b5e7d6d',
+//         },
+//     },
+// }
+
+// export const PERMISSION_CONTRACTS = [
+//     11155111: {
+//         contractAddress: ''
+//     }
+// ]

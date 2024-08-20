@@ -12,7 +12,7 @@ export class LinkIdentitiesDto {
     })
     @IsString()
     @IsNotEmpty()
-    @JwtProvider(AUTH_PROVIDERS.SIWE)
+    @JwtProvider(AUTH_PROVIDERS.GOOGLE) // @JwtProvider(AUTH_PROVIDERS.SIWE) TODO: CHANGE BACK
     readonly siweJwt: string
 
     @ApiProperty({
