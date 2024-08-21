@@ -9,12 +9,10 @@ describe('SiweService', () => {
     let publicClientMock: { verifySiweMessage: jest.Mock }
     let loggerMock: PinoLogger
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         publicClientMock = {
             verifySiweMessage: jest.fn(),
         }
-
-        loggerMock = { error: jest.fn() } as unknown as PinoLogger
 
         const module: TestingModule = await Test.createTestingModule({
             imports: [LoggerModule.forRoot()],

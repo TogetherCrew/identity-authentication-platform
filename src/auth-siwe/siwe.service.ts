@@ -28,12 +28,7 @@ export class SiweService {
                 throw new Error()
             }
         } catch (error) {
-            this.logger.error(
-                {
-                    error,
-                },
-                `Siwe Verification Failed`
-            )
+            this.logger.error(error, `Siwe Verification Failed`)
             throw new HttpException(
                 `${AUTH_PROVIDERS.SIWE} verification Failed`,
                 HttpStatus.BAD_REQUEST

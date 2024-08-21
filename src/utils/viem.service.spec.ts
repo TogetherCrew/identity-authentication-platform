@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ViemUtilsService } from './viem.utils.service'
-import { SUPPORTED_CHAIN_IDS } from '../shared/constants/chain.constants'
+import { SUPPORTED_CHAINS } from '../shared/constants/chain.constants'
 import * as chains from 'viem/chains'
 
 describe('ViemService', () => {
@@ -20,7 +20,7 @@ describe('ViemService', () => {
 
     describe('idToChain', () => {
         it('should return the correct chain for supported chain IDs', () => {
-            for (const chainId of SUPPORTED_CHAIN_IDS) {
+            for (const chainId of SUPPORTED_CHAINS) {
                 const expectedChain = Object.values(chains).find(
                     (chain) => chain.id === chainId
                 )
@@ -37,7 +37,7 @@ describe('ViemService', () => {
 
     describe('getPublicClient', () => {
         it('should return a public client for supported chain IDs', () => {
-            for (const chainId of SUPPORTED_CHAIN_IDS) {
+            for (const chainId of SUPPORTED_CHAINS) {
                 const client = service.getPublicClient(chainId)
                 expect(client).toBeDefined()
             }

@@ -3,7 +3,7 @@ import { CryptoUtilsService } from './crypto-utils.service'
 import { EncodeUtilsService } from './encode-utils.service'
 import { ViemUtilsService } from './viem.utils.service'
 import { DataUtilsService } from './data-utils.service'
-import { WalletUtilsService } from './wallet.utils.service'
+import { EthersUtilsService } from './ethers.utils.service'
 
 @Module({
     providers: [
@@ -11,14 +11,14 @@ import { WalletUtilsService } from './wallet.utils.service'
         EncodeUtilsService,
         ViemUtilsService,
         DataUtilsService,
-        WalletUtilsService,
+        EthersUtilsService,
     ],
     exports: [
         CryptoUtilsService,
         EncodeUtilsService,
         ViemUtilsService,
         DataUtilsService,
-        WalletUtilsService,
+        EthersUtilsService,
     ],
 })
-export class UtilsModule { }
+export class UtilsModule {}
