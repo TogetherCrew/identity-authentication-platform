@@ -28,8 +28,7 @@ export class LinkingController {
         const { chainId, anyJwt, siweJwt } = linkIdentitiesDto
         const siweJwtPayload = await this.authService.validateToken(siweJwt)
         const anyJwtPayload = await this.authService.validateToken(anyJwt)
-        const secret = 'secret'
-        await this.litService.encrypt(
+        const secret = await this.litService.encrypt(
             chainId,
             {
                 id: anyJwtPayload.sub,
