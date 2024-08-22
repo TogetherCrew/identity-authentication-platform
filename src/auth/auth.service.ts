@@ -1,12 +1,17 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, BadRequestException } from '@nestjs/common'
 import * as jwt from 'jsonwebtoken'
 import { JwtPayload } from './types/jwt-payload.type'
 import { ConfigService } from '@nestjs/config'
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
 import * as moment from 'moment'
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(
+        private readonly configService: ConfigService,
+        @InjectPinoLogger(AuthService.name)
+        private readonly logger: PinoLogger
+    ) {}
 
     async signPayload(payload: JwtPayload): Promise<string> {
         return jwt.sign(payload, this.configService.get<string>('jwt.secret'), {
@@ -15,9 +20,18 @@ export class AuthService {
     }
 
     async validateToken(token: string): Promise<JwtPayload> {
-        return jwt.verify(token, this.configService.get<string>('jwt.secret'), {
-            algorithms: ['HS256'],
-        }) as JwtPayload
+        try {
+            return jwt.verify(
+                token,
+                this.configService.get<string>('jwt.secret'),
+                {
+                    algorithms: ['HS256'],
+                }
+            ) as JwtPayload
+        } catch (error) {
+            this.logger.error(error, `Failed to validtae token`)
+            throw new BadRequestException(error.message)
+        }
     }
 
     async generateJwt(identifier: string, provider: string): Promise<string> {

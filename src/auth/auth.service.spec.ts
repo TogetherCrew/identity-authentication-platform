@@ -6,29 +6,35 @@ import { ConfigService } from '@nestjs/config'
 import * as moment from 'moment'
 import { JwtPayload } from './types/jwt-payload.type'
 import * as jwt from 'jsonwebtoken'
+import { PinoLogger, LoggerModule } from 'nestjs-pino'
+import { BadRequestException } from '@nestjs/common'
+
+const mockPublicKey =
+    '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef'
+const mockJwtSecret = 'jwtSecret'
+const mockJwtExpiresIn = '60'
+
+const mockConfigService = {
+    get: jest.fn((key: string) => {
+        if (key === 'wallet.publicKey') return mockPublicKey
+        if (key === 'jwt.secret') return mockJwtSecret
+        if (key === 'jwt.expiresIn') return mockJwtExpiresIn
+    }),
+}
 
 describe('AuthService', () => {
     let service: AuthService
-    const mockPublicKey =
-        '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef'
-    const mockJwtSecret = 'jwtSecret'
-    const mockJwtExpiresIn = '60'
+    let loggerMock: PinoLogger
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
+            imports: [LoggerModule.forRoot()],
             providers: [
                 AuthService,
                 JwtService,
-                {
-                    provide: ConfigService,
-                    useValue: {
-                        get: jest.fn((key: string) => {
-                            if (key === 'wallet.publicKey') return mockPublicKey
-                            if (key === 'jwt.secret') return mockJwtSecret
-                            if (key === 'jwt.expiresIn') return mockJwtExpiresIn
-                        }),
-                    },
-                },
+                { provide: ConfigService, useValue: mockConfigService },
+                { provide: ConfigService, useValue: mockConfigService },
+                { provide: PinoLogger, useValue: loggerMock },
             ],
         }).compile()
 
@@ -76,7 +82,7 @@ describe('AuthService', () => {
         it('should return null if token is invalid', async () => {
             await expect(
                 service.validateToken('invalid.token.here')
-            ).rejects.toThrow(jwt.JsonWebTokenError)
+            ).rejects.toThrow(BadRequestException)
         })
     })
 })

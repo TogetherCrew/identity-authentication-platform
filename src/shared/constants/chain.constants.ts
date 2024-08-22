@@ -1,12 +1,14 @@
-export const SUPPORTED_CHAINS = [
-    {
-        chainId: 11155111,
-        easSchemaUUID:
-            '0x85e90e3e16d319578888790af3284fea8bca549305071531e7478e3e0b5e7d6d',
+export const SUPPORTED_CHAINS = [11155111]
 
-        easContractAddress: '0xC2679fBD37d54388Ce493F1DB75320D236e1815e',
-
-        easContractAbi: [
+export const CHAINS = {
+    11155111: {
+        rpcURL: 'https://ethereum-sepolia-rpc.publicnode.com',
+    },
+}
+export const EAS_CONTRACTS = {
+    11155111: {
+        address: '0xC2679fBD37d54388Ce493F1DB75320D236e1815e',
+        abi: [
             {
                 inputs: [
                     {
@@ -845,27 +847,125 @@ export const SUPPORTED_CHAINS = [
             },
         ],
 
-        permissionManagerContractAddress:
-            '0x787aeDd9Fb3e16EeF5b00C0F35f105daD2A1aA15',
-
-        permissionManagerContractFunctionName: 'hasPermission',
-        permissionManagerContractAbi: {
-            inputs: [
-                { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
-                {
-                    internalType: 'address',
-                    name: 'account',
-                    type: 'address',
-                },
-            ],
-            name: 'hasPermission',
-            outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
-            stateMutability: 'view',
-            type: 'function',
+        metadata: {
+            schema: '0x85e90e3e16d319578888790af3284fea8bca549305071531e7478e3e0b5e7d6d',
         },
     },
-]
+}
 
-export const SUPPORTED_CHAIN_IDS = SUPPORTED_CHAINS.map(
-    (chain) => chain.chainId
-)
+export const PERMISSION_CONTRACTS = {
+    11155111: {
+        address: '0x787aeDd9Fb3e16EeF5b00C0F35f105daD2A1aA15',
+        abi: [
+            {
+                anonymous: false,
+                inputs: [
+                    {
+                        indexed: false,
+                        internalType: 'bytes32',
+                        name: 'uid',
+                        type: 'bytes32',
+                    },
+                    {
+                        indexed: false,
+                        internalType: 'address',
+                        name: 'account',
+                        type: 'address',
+                    },
+                    {
+                        indexed: false,
+                        internalType: 'bool',
+                        name: 'granted',
+                        type: 'bool',
+                    },
+                ],
+                name: 'PermissionDeleted',
+                type: 'event',
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    {
+                        indexed: false,
+                        internalType: 'bytes32',
+                        name: 'uid',
+                        type: 'bytes32',
+                    },
+                    {
+                        indexed: false,
+                        internalType: 'address',
+                        name: 'account',
+                        type: 'address',
+                    },
+                    {
+                        indexed: false,
+                        internalType: 'bool',
+                        name: 'granted',
+                        type: 'bool',
+                    },
+                ],
+                name: 'PermissionUpdated',
+                type: 'event',
+            },
+            {
+                inputs: [
+                    { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
+                    {
+                        internalType: 'address',
+                        name: 'account',
+                        type: 'address',
+                    },
+                ],
+                name: 'grantPermission',
+                outputs: [],
+                stateMutability: 'nonpayable',
+                type: 'function',
+            },
+            {
+                inputs: [
+                    { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
+                    {
+                        internalType: 'address',
+                        name: 'account',
+                        type: 'address',
+                    },
+                ],
+                name: 'hasPermission',
+                outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+                stateMutability: 'view',
+                type: 'function',
+            },
+            {
+                inputs: [
+                    { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
+                    {
+                        internalType: 'address',
+                        name: 'account',
+                        type: 'address',
+                    },
+                ],
+                name: 'revokePermission',
+                outputs: [],
+                stateMutability: 'nonpayable',
+                type: 'function',
+            },
+        ],
+        metadata: {
+            permissionManagerFunctionName: 'hasPermission',
+            permissionManagerAbi: {
+                inputs: [
+                    { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
+                    {
+                        internalType: 'address',
+                        name: 'account',
+                        type: 'address',
+                    },
+                ],
+                name: 'hasPermission',
+                outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+                stateMutability: 'view',
+                type: 'function',
+            },
+        },
+    },
+}

@@ -1,209 +1,117 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, BadRequestException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { ViemUtilsService } from '../utils/viem.utils.service'
+import { SCHEMA_TYPES } from './constants/attestation.constants'
 import {
-    SCHEMA_TYPES,
-    ATTEST_PRIMARY_TYPE,
-} from './constants/attestation.constants'
+    EAS_CONTRACTS,
+    SUPPORTED_CHAINS,
+} from '../shared/constants/chain.constants'
+import { SupportedChainId } from '../shared/types/chain.type'
+import { Signer } from 'ethers'
+import { EthersUtilsService } from '../utils/ethers.utils.service'
 import {
-    getContract,
-    Address,
-    encodeAbiParameters,
-    parseSignature,
-    EncodeAbiParametersReturnType,
-} from 'viem'
-import { privateKeyToAccount, Account } from 'viem/accounts'
-import { SUPPORTED_CHAINS } from '../shared/constants/chain.constants'
-import {
-    IAttestationRequestData,
-    IDelegatedAttestationRequest,
-    IDelegatedAttestationMessage,
-} from './interfaces/attestation.interfaces'
-import {
+    EAS,
+    SchemaEncoder,
     NO_EXPIRATION,
     ZERO_BYTES32,
 } from '@ethereum-attestation-service/eas-sdk'
-import { SupportedChainId } from '../shared/types/chain.type'
+import { Address } from 'viem'
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
 
 @Injectable()
 export class EasService {
-    private attester: Account
-    private easContracts: Map<number, any> = new Map()
+    private attesters: Map<number, Signer> = new Map()
+    private contracts: Map<number, EAS> = new Map()
 
     constructor(
-        private readonly viemUtilsService: ViemUtilsService,
-        private readonly configService: ConfigService
+        private readonly ethersUtilsService: EthersUtilsService,
+        private readonly configService: ConfigService,
+        @InjectPinoLogger(EasService.name)
+        private readonly logger: PinoLogger
     ) {
-        this.attester = privateKeyToAccount(
-            this.configService.get<string>('wallet.privateKey') as '0x${string}'
-        )
-        this.setEasContracts()
+        this.setAttesters()
+        this.setContracts()
     }
-    private setEasContracts() {
-        for (const chain of SUPPORTED_CHAINS) {
-            const publicClient = this.viemUtilsService.getPublicClient(
-                chain.chainId
+
+    private setAttesters() {
+        const privateKey = this.configService.get<string>(
+            'wallet.privateKey'
+        ) as string
+        for (const chainId of SUPPORTED_CHAINS) {
+            this.attesters.set(
+                chainId,
+                this.ethersUtilsService.getSigner(chainId, privateKey)
             )
-            if (publicClient) {
-                const easContract = getContract({
-                    address: chain.easContractAddress as '0x${string}',
-                    abi: chain.easContractAbi,
-                    client: publicClient,
-                })
-                this.easContracts.set(chain.chainId, easContract)
-            }
         }
     }
 
-    getContract(chainId: SupportedChainId) {
-        return this.easContracts.get(chainId)
-    }
-
-    getSchemaUUID(chainId: SupportedChainId): '0x${string}' {
-        const chain = SUPPORTED_CHAINS.find(
-            (chain) => chain.chainId === chainId
-        )
-        if (!chain) {
-            throw new Error(`Unsupported chain ID: ${chainId}`)
-        }
-        return chain.easSchemaUUID as '0x${string}'
-    }
-    getContractAddress(chainId: SupportedChainId): '0x${string}' {
-        const chain = SUPPORTED_CHAINS.find(
-            (chain) => chain.chainId === chainId
-        )
-        if (!chain) {
-            throw new Error(`Unsupported chain ID: ${chainId}`)
-        }
-        return chain.easContractAddress as '0x${string}'
-    }
-    getContractABI(chainId: SupportedChainId) {
-        const chain = SUPPORTED_CHAINS.find(
-            (chain) => chain.chainId === chainId
-        )
-        if (!chain) {
-            throw new Error(`Unsupported chain ID: ${chainId}`)
-        }
-        return chain.easContractAbi
-    }
-
-    async getDomain(chainId: SupportedChainId) {
-        const eas = await this.getContract(chainId)
-        if (!eas) {
-            throw new Error(`EAS contract not found for chain ID: ${chainId}`)
-        }
-        return {
-            name: 'EAS',
-            version: await eas.read.VERSION(),
-            chainId,
-            verifyingContract: eas.address,
+    private setContracts(): void {
+        for (const chainId of SUPPORTED_CHAINS) {
+            const eas = new EAS(EAS_CONTRACTS[chainId].address)
+            const attester = this.getAttester(chainId)
+            eas.connect(attester)
+            this.contracts.set(chainId, eas)
         }
     }
 
-    async getNounce(chainId: SupportedChainId) {
-        const eas = await this.getContract(chainId)
-        if (!eas) {
-            throw new Error(`EAS contract not found for chain ID: ${chainId}`)
-        }
-        return await eas.read.getNonce([this.attester.address])
+    getContract(chainId: SupportedChainId): EAS {
+        return this.contracts.get(chainId)
     }
 
-    createAttestationRequestData(
-        data: EncodeAbiParametersReturnType,
+    getAttester(chainId: SupportedChainId): Signer {
+        return this.attesters.get(chainId)
+    }
+
+    private encodeAttestationData(params: any[]): string {
+        const schemaEncoder = new SchemaEncoder(SCHEMA_TYPES)
+        return schemaEncoder.encodeData([
+            { name: 'key', value: params[0], type: 'bytes32' },
+            { name: 'provider', value: params[1], type: 'string' },
+            { name: 'secret', value: params[2], type: 'string' },
+        ])
+    }
+
+    private buildAttestationPayload(
+        chainId: SupportedChainId,
+        encodedData: string,
         recipient: Address
-    ): IAttestationRequestData {
-        const requestData: IAttestationRequestData = {
-            data,
+    ) {
+        return {
+            schema: EAS_CONTRACTS[chainId].metadata.schema,
             recipient,
             expirationTime: NO_EXPIRATION,
-            refUID: ZERO_BYTES32,
             revocable: true,
-            value: NO_EXPIRATION,
-        }
-        return requestData
-    }
-
-    createDelegatedAttestationRequest(
-        requestData: IAttestationRequestData,
-        chainId: SupportedChainId,
-        signature: '0x${string}'
-    ): IDelegatedAttestationRequest {
-        const { r, s, v } = parseSignature(signature)
-        const request: IDelegatedAttestationRequest = {
-            signature: { r, s, v: Number(v) },
-            attester: this.attester.address,
-            schema: this.getSchemaUUID(chainId),
-            data: requestData,
+            refUID: ZERO_BYTES32,
+            data: encodedData,
             deadline: 0n,
+            value: 0n,
         }
-        return request
-    }
-    createAttestationMessage(
-        requestData: IAttestationRequestData,
-        chainId: SupportedChainId,
-        nonce: any
-    ): IDelegatedAttestationMessage {
-        const message: IDelegatedAttestationMessage = {
-            ...requestData,
-            schema: this.getSchemaUUID(chainId),
-            attester: this.attester.address,
-            deadline: NO_EXPIRATION,
-            nonce,
-        }
-        return message
     }
 
-    async signAttestationMessage(
-        message: IDelegatedAttestationMessage,
-        domain: any
-    ) {
-        const signature = await this.attester.signTypedData({
-            domain,
-            types: {
-                // TODO: Use ATTEST_TYPE
-                Attest: [
-                    { name: 'attester', type: 'address' },
-                    { name: 'schema', type: 'bytes32' },
-                    { name: 'recipient', type: 'address' },
-                    { name: 'expirationTime', type: 'uint64' },
-                    { name: 'revocable', type: 'bool' },
-                    { name: 'refUID', type: 'bytes32' },
-                    { name: 'data', type: 'bytes' },
-                    { name: 'value', type: 'uint256' },
-                    { name: 'nonce', type: 'uint256' },
-                    { name: 'deadline', type: 'uint64' },
-                ],
-            },
-            primaryType: ATTEST_PRIMARY_TYPE,
-            message,
-        })
-        return signature
-    }
-    async getDelegatedAttestationRequest(
+    async getSignedDelegatedAttestation(
         chainId: SupportedChainId,
-        params,
+        params: any[],
         recipient: Address
     ) {
-        const domain = await this.getDomain(chainId)
-        const nonce = await this.getNounce(chainId)
-        const data = encodeAbiParameters(SCHEMA_TYPES, params)
-        const attestationRequestData = this.createAttestationRequestData(
-            data,
-            recipient
-        )
-        const attestationMessage = this.createAttestationMessage(
-            attestationRequestData,
-            chainId,
-            nonce
-        )
-        const signature = await this.signAttestationMessage(
-            attestationMessage,
-            domain
-        )
-        return this.createDelegatedAttestationRequest(
-            attestationRequestData,
-            chainId,
-            signature as '0x${string}'
-        )
+        try {
+            const eas = this.getContract(chainId)
+            const encodedData = this.encodeAttestationData(params)
+            const attestationPayload = this.buildAttestationPayload(
+                chainId,
+                encodedData,
+                recipient
+            )
+            const delegated = await eas.getDelegated()
+            const attester = this.getAttester(chainId)
+
+            return await delegated.signDelegatedAttestation(
+                attestationPayload,
+                attester
+            )
+        } catch (error) {
+            this.logger.error(error, 'Faield to signed delegated attestation')
+            throw new BadRequestException(
+                `Faield to signed delegated attestation`
+            )
+        }
     }
 }

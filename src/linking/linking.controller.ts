@@ -28,16 +28,18 @@ export class LinkingController {
         const { chainId, anyJwt, siweJwt } = linkIdentitiesDto
         const siweJwtPayload = await this.authService.validateToken(siweJwt)
         const anyJwtPayload = await this.authService.validateToken(anyJwt)
-        const secret = await this.litService.encrypt(
+        const secret = 'secret'
+        await this.litService.encrypt(
             chainId,
             {
                 id: anyJwtPayload.sub,
                 provider: anyJwtPayload.provider,
             },
+
             siweJwtPayload.sub as '0x${string}'
         )
         const delegatedAttestationRequest =
-            await this.easService.getDelegatedAttestationRequest(
+            await this.easService.getSignedDelegatedAttestation(
                 chainId,
                 [
                     keccak256(toHex(anyJwtPayload.sub)),
@@ -47,7 +49,7 @@ export class LinkingController {
                 siweJwtPayload.sub as '0x${string}'
             )
 
-        return this.dataUtilsService.formatBigIntValues(
+        return this.dataUtilsService.convertBigIntsToStrings(
             delegatedAttestationRequest
         )
     }

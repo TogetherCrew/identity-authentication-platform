@@ -1,28 +1,31 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { EasService } from './eas.service'
-import { ViemUtilsService } from '../utils/viem.utils.service'
 import { ConfigService } from '@nestjs/config'
 import { generatePrivateKey } from 'viem/accounts'
 // import { EAS_SEPOLIA_CONTRACT_ADDRESS } from './constants/sepolia'
 // import { sepolia } from 'viem/chains'
+import { PinoLogger, LoggerModule } from 'nestjs-pino'
+import { EthersUtilsService } from '../utils/ethers.utils.service'
+const mockPrivateKey = generatePrivateKey()
+
+const mockConfigService = {
+    get: jest.fn((key: string) => {
+        if (key === 'wallet.privateKey') return mockPrivateKey
+    }),
+}
 
 describe('EasService', () => {
     let service: EasService
-    const mockPrivateKey = generatePrivateKey()
+    let loggerMock: PinoLogger
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
+            imports: [LoggerModule.forRoot()],
             providers: [
                 EasService,
-                ViemUtilsService,
-                {
-                    provide: ConfigService,
-                    useValue: {
-                        get: jest.fn((key: string) => {
-                            if (key === 'wallet.privateKey')
-                                return mockPrivateKey
-                        }),
-                    },
-                },
+                EthersUtilsService,
+                { provide: ConfigService, useValue: mockConfigService },
+                { provide: PinoLogger, useValue: loggerMock },
             ],
         }).compile()
 

@@ -83,12 +83,7 @@ export class OAuthService {
             return response.data
         } catch (error) {
             this.logger.error(
-                {
-                    message: error.message,
-                    name: error.name,
-                    stack: error.stack,
-                    response: error.response?.data,
-                },
+                error,
                 `Failed to exchange ${provider} code for token`
             )
             throw new BadRequestException(
@@ -112,12 +107,7 @@ export class OAuthService {
             return response.data
         } catch (error) {
             this.logger.error(
-                {
-                    message: error.message,
-                    name: error.name,
-                    stack: error.stack,
-                    response: error.response?.data,
-                },
+                error,
                 `Failed to retrieve user information from ${provider}`
             )
             throw new BadRequestException(

@@ -26,6 +26,4 @@ export const REVOKE_TYPE = [
     { name: 'nonce', type: 'uint256' },
     { name: 'deadline', type: 'uint64' },
 ]
-export const SCHEMA_TYPES = parseAbiParameters(
-    'bytes32 key, string provider, string secret'
-)
+export const SCHEMA_TYPES = 'bytes32 key, string provider, string secret'

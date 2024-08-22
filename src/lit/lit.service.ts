@@ -1,8 +1,4 @@
-import {
-    Injectable,
-    Logger,
-    InternalServerErrorException,
-} from '@nestjs/common'
+import { Injectable, BadRequestException } from '@nestjs/common'
 import {
     LitNodeClientNodeJs,
     encryptToJson,
@@ -10,16 +6,20 @@ import {
 import { ConfigService } from '@nestjs/config'
 import { networkConfigs } from './constants/network.constants'
 import { EvmContractConditions } from '@lit-protocol/types'
-import { SUPPORTED_CHAINS } from '../shared/constants/chain.constants'
+import { PERMISSION_CONTRACTS } from '../shared/constants/chain.constants'
 import { SupportedChainId, LitChain } from '../shared/types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
 import { Address, keccak256, toHex } from 'viem'
 
 @Injectable()
 export class LitService {
-    private readonly logger = new Logger(LitService.name)
     private litNodeClient: LitNodeClientNodeJs = null
-    constructor(private readonly configService: ConfigService) {}
+    constructor(
+        private readonly configService: ConfigService,
+        @InjectPinoLogger(LitService.name)
+        private readonly logger: PinoLogger
+    ) {}
 
     async connect() {
         const networkConfig = this.getNetworkConfig(
@@ -44,36 +44,6 @@ export class LitService {
         return networkConfig
     }
 
-    getContractAddress(chainId: SupportedChainId): '0x${string}' {
-        const chain = SUPPORTED_CHAINS.find(
-            (chain) => chain.chainId === chainId
-        )
-        if (!chain) {
-            throw new Error(`Unsupported chain ID: ${chainId}`)
-        }
-        return chain.permissionManagerContractAddress as '0x${string}'
-    }
-
-    getContractFunctionName(chainId: SupportedChainId) {
-        const chain = SUPPORTED_CHAINS.find(
-            (chain) => chain.chainId === chainId
-        )
-        if (!chain) {
-            throw new Error(`Unsupported chain ID: ${chainId}`)
-        }
-        return chain.permissionManagerContractFunctionName
-    }
-
-    getContractAbi(chainId: SupportedChainId) {
-        const chain = SUPPORTED_CHAINS.find(
-            (chain) => chain.chainId === chainId
-        )
-        if (!chain) {
-            throw new Error(`Unsupported chain ID: ${chainId}`)
-        }
-        return chain.permissionManagerContractAbi
-    }
-
     chainIdToLitChainName = (chainId: number): LitChain | undefined => {
         for (const [name, chain] of Object.entries(LIT_CHAINS)) {
             if (chain.chainId === chainId) {
@@ -87,10 +57,13 @@ export class LitService {
     ): EvmContractConditions {
         return [
             {
-                contractAddress: this.getContractAddress(chainId),
-                functionName: this.getContractFunctionName(chainId),
+                contractAddress: PERMISSION_CONTRACTS[chainId].address,
+                functionName:
+                    PERMISSION_CONTRACTS[chainId].metadata
+                        .permissionManagerFunctionName,
                 functionParams: [keccak256(toHex(id)), ':userAddress'],
-                functionAbi: this.getContractAbi(chainId),
+                functionAbi:
+                    PERMISSION_CONTRACTS[chainId].metadata.permissionManagerAbi,
                 chain: this.chainIdToLitChainName(chainId),
                 returnValueTest: {
                     key: '',
@@ -121,8 +94,8 @@ export class LitService {
                 chain: this.chainIdToLitChainName(chainId),
             })
         } catch (error) {
-            this.logger.error(`Failed to encrypt data`, error)
-            throw new InternalServerErrorException(`Failed to encrypt data`)
+            this.logger.error(error, `Failed to encrypt data`)
+            throw new BadRequestException(`Failed to encrypt data`)
         }
     }
 }
