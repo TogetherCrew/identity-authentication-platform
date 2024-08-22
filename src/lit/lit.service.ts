@@ -5,7 +5,10 @@ import {
 } from '@lit-protocol/lit-node-client-nodejs'
 import { ConfigService } from '@nestjs/config'
 import { networkConfigs } from './constants/network.constants'
-import { EvmContractConditions } from '@lit-protocol/types'
+import {
+    AccessControlConditions,
+    EvmContractConditions,
+} from '@lit-protocol/types'
 import { PERMISSION_CONTRACTS } from '../shared/constants/chain.constants'
 import { SupportedChainId, LitChain } from '../shared/types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
@@ -73,6 +76,24 @@ export class LitService {
             },
         ]
     }
+    generateAccessControlConditions(
+        chainId: SupportedChainId,
+        value: Address
+    ): AccessControlConditions {
+        return [
+            {
+                contractAddress: '',
+                standardContractType: '',
+                chain: this.chainIdToLitChainName(chainId),
+                method: '',
+                parameters: [':userAddress'],
+                returnValueTest: {
+                    comparator: '=',
+                    value,
+                },
+            },
+        ]
+    }
 
     async encrypt(
         chainId: SupportedChainId,
@@ -83,6 +104,10 @@ export class LitService {
             chainId,
             userAddress
         )
+        const accessControlConditions = this.generateAccessControlConditions(
+            chainId,
+            userAddress
+        )
         if (!this.litNodeClient) {
             await this.connect()
         }
@@ -90,6 +115,7 @@ export class LitService {
             return await encryptToJson({
                 string: JSON.stringify(dataToEncrypt),
                 evmContractConditions,
+                accessControlConditions,
                 litNodeClient: this.litNodeClient,
                 chain: this.chainIdToLitChainName(chainId),
             })
