@@ -12,7 +12,7 @@ export class LinkIdentitiesDto {
     })
     @IsString()
     @IsNotEmpty()
-    @JwtProvider(AUTH_PROVIDERS.GOOGLE)
+    @JwtProvider(AUTH_PROVIDERS.SIWE)
     readonly siweJwt: string
     @ApiProperty({
         description: 'The siwe JWT or any provider JWT.',
