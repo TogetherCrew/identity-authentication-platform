@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common'
+import {
+    Injectable,
+    BadRequestException,
+    ForbiddenException,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { SCHEMA_TYPES } from './constants/attestation.constants'
 import {
@@ -14,9 +18,11 @@ import {
     SchemaEncoder,
     NO_EXPIRATION,
     ZERO_BYTES32,
+    Attestation,
 } from '@ethereum-attestation-service/eas-sdk'
 import { Address } from 'viem'
 import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
+import { privateKeyToAddress } from 'viem/accounts'
 
 @Injectable()
 export class EasService {
@@ -36,7 +42,7 @@ export class EasService {
     private setAttesters() {
         const privateKey = this.configService.get<string>(
             'wallet.privateKey'
-        ) as string
+        ) as '0x${string}'
         for (const chainId of SUPPORTED_CHAINS) {
             this.attesters.set(
                 chainId,
@@ -91,6 +97,31 @@ export class EasService {
         }
     }
 
+    revokeable(attestation: Attestation, recipient: Address) {
+        const privateKey = this.configService.get<string>(
+            'wallet.privateKey'
+        ) as '0x${string}'
+        if (attestation.attester !== privateKeyToAddress(privateKey)) {
+            throw new BadRequestException(
+                `We aren't attester of this attesation`
+            )
+        }
+        if (attestation.recipient !== recipient) {
+            throw new ForbiddenException(
+                `You aren't recipient of this attesation`
+            )
+        }
+    }
+    async getAttestaion(chainId: SupportedChainId, uid: string) {
+        try {
+            const eas = this.getContract(chainId)
+            return await eas.getAttestation(uid)
+        } catch (error) {
+            this.logger.error(error, 'Failed to get attestation')
+            throw new BadRequestException(`Failed to get attestation`)
+        }
+    }
+
     async getSignedDelegatedAttestation(
         chainId: SupportedChainId,
         params: any[],
@@ -112,9 +143,9 @@ export class EasService {
                 attester
             )
         } catch (error) {
-            this.logger.error(error, 'Faield to signed delegated attestation')
+            this.logger.error(error, 'Failed to signed delegated attestation')
             throw new BadRequestException(
-                `Faield to signed delegated attestation`
+                `Failed to signed delegated attestation`
             )
         }
     }
@@ -135,9 +166,9 @@ export class EasService {
                 attester
             )
         } catch (error) {
-            this.logger.error(error, 'Faield to signed delegated revocation')
+            this.logger.error(error, 'Failed to signed delegated revocation')
             throw new BadRequestException(
-                `Faield to signed delegated revocation`
+                `Failed to signed delegated revocation`
             )
         }
     }
