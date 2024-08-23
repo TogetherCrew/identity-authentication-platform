@@ -4,6 +4,7 @@ import { SCHEMA_TYPES } from './constants/attestation.constants'
 import {
     EAS_CONTRACTS,
     SUPPORTED_CHAINS,
+    CHAINS,
 } from '../shared/constants/chain.constants'
 import { SupportedChainId } from '../shared/types/chain.type'
 import { Signer } from 'ethers'
@@ -39,7 +40,10 @@ export class EasService {
         for (const chainId of SUPPORTED_CHAINS) {
             this.attesters.set(
                 chainId,
-                this.ethersUtilsService.getSigner(chainId, privateKey)
+                this.ethersUtilsService.getSigner(
+                    CHAINS[chainId].rpcURL,
+                    privateKey
+                )
             )
         }
     }
