@@ -9,6 +9,7 @@ import { configModules, configValidationSchema } from './config'
 import { pinoConfig } from './config/pino.config'
 import { LinkingModule } from './linking/linking.module'
 import { LitModule } from './lit/lit.module'
+import { EasModule } from './eas/eas.module'
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import { LitModule } from './lit/lit.module'
         AuthSiweModule,
         LinkingModule,
         LitModule,
+        EasModule,
     ],
     controllers: [],
     providers: [],
