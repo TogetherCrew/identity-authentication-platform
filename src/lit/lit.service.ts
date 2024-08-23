@@ -16,7 +16,6 @@ import {
 } from '@lit-protocol/types'
 import {
     PERMISSION_CONTRACTS,
-    ACCESS_MANAGER_CONTRACTS,
 } from '../shared/constants/chain.constants'
 import { SupportedChainId, LitChain } from '../shared/types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
