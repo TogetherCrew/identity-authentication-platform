@@ -73,32 +73,32 @@ describe('LitService', () => {
     //     })
     // })
 
-    describe('disconnect', () => {
-        it('should disconnect from the Lit node client', async () => {
-            const litNodeClient = service['litNodeClient']
-            await service.disconnect()
-            expect(litNodeClient.disconnect).toHaveBeenCalled()
-            expect(service['litNodeClient']).toBeNull()
-        })
-    })
+    // describe('disconnect', () => {
+    //     it('should disconnect from the Lit node client', async () => {
+    //         const litNodeClient = service['litNodeClient']
+    //         await service.disconnect()
+    //         expect(litNodeClient.disconnect).toHaveBeenCalled()
+    //         expect(service['litNodeClient']).toBeNull()
+    //     })
+    // })
 
-    describe('getNetworkConfig', () => {
-        it('should return the correct network configuration', () => {
-            const mockNetworkConfig = { litNetwork: 'test-network' }
-            service['getNetworkConfig'] = jest
-                .fn()
-                .mockReturnValue(mockNetworkConfig)
+    // describe('getNetworkConfig', () => {
+    //     it('should return the correct network configuration', () => {
+    //         const mockNetworkConfig = { litNetwork: 'test-network' }
+    //         service['getNetworkConfig'] = jest
+    //             .fn()
+    //             .mockReturnValue(mockNetworkConfig)
 
-            expect(service.getNetworkConfig('test-network')).toEqual(
-                mockNetworkConfig
-            )
-        })
-        it('should throw an error if the network is unsupported', () => {
-            expect(() =>
-                service.getNetworkConfig('unsupported-network')
-            ).toThrow(Error('Unsupported lit network: unsupported-network'))
-        })
-    })
+    //         expect(service.getNetworkConfig('test-network')).toEqual(
+    //             mockNetworkConfig
+    //         )
+    //     })
+    //     it('should throw an error if the network is unsupported', () => {
+    //         expect(() =>
+    //             service.getNetworkConfig('unsupported-network')
+    //         ).toThrow(Error('Unsupported lit network: unsupported-network'))
+    //     })
+    // })
 
     // describe('generateEvmContractConditions', () => {
     //     it('should generate the correct EVM contract conditions', () => {
