@@ -118,4 +118,27 @@ export class EasService {
             )
         }
     }
+
+    async getSignedDelegatedRevocation(chainId: SupportedChainId, uid: string) {
+        try {
+            const eas = this.getContract(chainId)
+            const delegated = await eas.getDelegated()
+            const attester = this.getAttester(chainId)
+
+            return await delegated.signDelegatedRevocation(
+                {
+                    schema: EAS_CONTRACTS[chainId].metadata.schema,
+                    uid,
+                    deadline: 0n,
+                    value: 0n,
+                },
+                attester
+            )
+        } catch (error) {
+            this.logger.error(error, 'Faield to signed delegated revocation')
+            throw new BadRequestException(
+                `Faield to signed delegated revocation`
+            )
+        }
+    }
 }
