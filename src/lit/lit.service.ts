@@ -23,7 +23,7 @@ import { LIT_CHAINS } from '@lit-protocol/constants'
 import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
 import { Address, keccak256, toHex } from 'viem'
 import { EthersUtilsService } from '../utils/ethers.utils.service'
-import { LIT_RPC, LitNetwork } from '@lit-protocol/constants'
+import { LitNetwork } from '@lit-protocol/constants'
 import {
     LitAbility,
     LitAccessControlConditionResource,
