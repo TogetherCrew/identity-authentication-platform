@@ -1,10 +1,15 @@
-import { Injectable, BadRequestException } from '@nestjs/common'
+import {
+    Injectable,
+    BadRequestException,
+    InternalServerErrorException,
+} from '@nestjs/common'
 import {
     LitNodeClientNodeJs,
     encryptToJson,
+    decryptFromJson,
 } from '@lit-protocol/lit-node-client-nodejs'
 import { ConfigService } from '@nestjs/config'
-import { networkConfigs } from './constants/network.constants'
+import { networks } from './constants/network.constants'
 import {
     AccessControlConditions,
     EvmContractConditions,
@@ -14,37 +19,41 @@ import { SupportedChainId, LitChain } from '../shared/types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
 import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
 import { Address, keccak256, toHex } from 'viem'
+import { EthersUtilsService } from '../utils/ethers.utils.service'
+import { LitNetwork } from '@lit-protocol/constants'
+import {
+    LitAbility,
+    LitAccessControlConditionResource,
+    createSiweMessage,
+    generateAuthSig,
+} from '@lit-protocol/auth-helpers'
+import { privateKeyToAddress } from 'viem/accounts'
 
 @Injectable()
 export class LitService {
     private litNodeClient: LitNodeClientNodeJs = null
+    private networkName: LitNetwork
     constructor(
         private readonly configService: ConfigService,
+        private readonly ethersUtilsService: EthersUtilsService,
+
         @InjectPinoLogger(LitService.name)
         private readonly logger: PinoLogger
     ) {}
 
     async connect() {
-        const networkConfig = this.getNetworkConfig(
-            this.configService.get<string>('lit.network')
+        this.networkName = this.configService.get<string>(
+            'lit.network'
+        ) as LitNetwork
+        this.litNodeClient = new LitNodeClientNodeJs(
+            networks[this.networkName].clientConfig
         )
-        this.litNodeClient = new LitNodeClientNodeJs(networkConfig)
         await this.litNodeClient.connect()
     }
 
     async disconnect() {
         await this.litNodeClient.disconnect()
         this.litNodeClient = null
-    }
-
-    getNetworkConfig(networkName: string) {
-        const networkConfig = networkConfigs.find(
-            (network) => network.litNetwork === networkName
-        )
-        if (!networkConfig) {
-            throw new Error(`Unsupported lit network: ${networkName}`)
-        }
-        return networkConfig
     }
 
     chainIdToLitChainName = (chainId: number): LitChain | undefined => {
@@ -56,17 +65,87 @@ export class LitService {
     }
     generateEvmContractConditions(
         chainId: SupportedChainId,
-        id: Address
+        userAddress: Address
     ): EvmContractConditions {
         return [
             {
                 contractAddress: PERMISSION_CONTRACTS[chainId].address,
                 functionName:
                     PERMISSION_CONTRACTS[chainId].metadata
-                        .permissionManagerFunctionName,
-                functionParams: [keccak256(toHex(id)), ':userAddress'],
+                        .hasPermissionFunctionName,
+                functionParams: [keccak256(toHex(userAddress)), ':userAddress'],
                 functionAbi:
-                    PERMISSION_CONTRACTS[chainId].metadata.permissionManagerAbi,
+                    PERMISSION_CONTRACTS[chainId].metadata.hasPermissionAbi,
+                chain: this.chainIdToLitChainName(chainId),
+                returnValueTest: {
+                    key: '',
+                    comparator: '=',
+                    value: 'true',
+                },
+            },
+            { operator: 'or' },
+            // {
+            //     contractAddress: ACCESS_MANAGER_CONTRACTS[chainId].address,
+            //     functionName:
+            //         ACCESS_MANAGER_CONTRACTS[chainId].metadata
+            //             .hasRoleFunctionName,
+            //     functionParams: [
+            //         '3',
+            //         privateKeyToAddress(
+            //             this.configService.get<string>(
+            //                 'wallet.privateKey'
+            //             ) as '0x${string}'
+            //         ),
+            //     ],
+            //     functionAbi:
+            //         ACCESS_MANAGER_CONTRACTS[chainId].metadata.hasRoleAbi,
+            //     chain: this.chainIdToLitChainName(chainId),
+            //     returnValueTest: {
+            //         key: '',
+            //         comparator: '=',
+            //         value: 'true',
+            //     },
+            // },
+            {
+                contractAddress: '0x946F4b6EA3AD07Cd4eed93D1baD54Ac2c948e0C0',
+                functionName: 'hasRole',
+                functionParams: [
+                    '3',
+                    privateKeyToAddress(
+                        this.configService.get<string>(
+                            'wallet.privateKey'
+                        ) as '0x${string}'
+                    ),
+                ],
+                functionAbi: {
+                    inputs: [
+                        {
+                            internalType: 'uint64',
+                            name: 'roleId',
+                            type: 'uint64',
+                        },
+                        {
+                            internalType: 'address',
+                            name: 'account',
+                            type: 'address',
+                        },
+                    ],
+                    name: 'hasRole',
+                    outputs: [
+                        {
+                            internalType: 'bool',
+                            name: 'isMember',
+                            type: 'bool',
+                        },
+                        {
+                            internalType: 'uint32',
+                            name: 'executionDelay',
+                            type: 'uint32',
+                        },
+                    ],
+                    stateMutability: 'view',
+                    type: 'function',
+                },
                 chain: this.chainIdToLitChainName(chainId),
                 returnValueTest: {
                     key: '',
@@ -92,10 +171,89 @@ export class LitService {
                     value,
                 },
             },
+            { operator: 'or' },
+            {
+                contractAddress: '',
+                standardContractType: '',
+                chain: this.chainIdToLitChainName(chainId),
+                method: '',
+                parameters: [':userAddress'],
+                returnValueTest: {
+                    comparator: '=',
+                    value: privateKeyToAddress(
+                        this.configService.get<string>(
+                            'wallet.privateKey'
+                        ) as '0x${string}'
+                    ),
+                },
+            },
         ]
     }
+    async getSessionSigsViaAuthSig(chainId: SupportedChainId) {
+        const signer = this.ethersUtilsService.getSigner(
+            networks[this.networkName].rpc,
+            this.configService.get<string>('wallet.privateKey')
+        )
+        if (!this.litNodeClient) {
+            await this.connect()
+        }
+        const expiration = new Date(
+            Date.now() + 1000 * 60 * 60 * 24
+        ).toISOString()
 
-    async encrypt(
+        const resourceAbilityRequests = [
+            {
+                resource: new LitAccessControlConditionResource('*'),
+                ability: LitAbility.AccessControlConditionDecryption,
+            },
+        ]
+
+        const authNeededCallback = async (params: {
+            uri?: string
+            expiration?: string
+            resourceAbilityRequests?: any
+        }) => {
+            const toSign = await createSiweMessage({
+                uri: params.uri!,
+                expiration: params.expiration!,
+                resources: params.resourceAbilityRequests,
+                walletAddress: await signer.getAddress(),
+                nonce: await this.litNodeClient!.getLatestBlockhash(),
+                litNodeClient: this.litNodeClient,
+            })
+
+            return await generateAuthSig({
+                signer: signer,
+                toSign,
+            })
+        }
+
+        return await this.litNodeClient.getSessionSigs({
+            chain: this.chainIdToLitChainName(chainId),
+            expiration,
+            resourceAbilityRequests,
+            authNeededCallback,
+        })
+    }
+
+    async decryptFromJson(chainId: SupportedChainId, dataToDecrypt: any) {
+        const sessionSigs = await this.getSessionSigsViaAuthSig(chainId)
+        if (!this.litNodeClient) {
+            await this.connect()
+        }
+        try {
+            return await decryptFromJson({
+                litNodeClient: this.litNodeClient,
+                parsedJsonData: JSON.parse(dataToDecrypt),
+                sessionSigs,
+            })
+        } catch (error) {
+            this.logger.error(error, `Failed to decrypt data`)
+            throw new InternalServerErrorException(`Failed to decrypt data`)
+        }
+    }
+
+    async encryptToJson(
         chainId: SupportedChainId,
         dataToEncrypt: any,
         userAddress: Address
@@ -121,7 +279,7 @@ export class LitService {
             })
         } catch (error) {
             this.logger.error(error, `Failed to encrypt data`)
-            throw new BadRequestException(`Failed to encrypt data`)
+            throw new InternalServerErrorException(`Failed to encrypt data`)
         }
     }
 }
