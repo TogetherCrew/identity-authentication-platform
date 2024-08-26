@@ -7,7 +7,7 @@ import * as moment from 'moment'
 import { JwtPayload } from './types/jwt-payload.type'
 import * as jwt from 'jsonwebtoken'
 import { PinoLogger, LoggerModule } from 'nestjs-pino'
-import { BadRequestException } from '@nestjs/common'
+import { UnauthorizedException } from '@nestjs/common'
 
 const mockPublicKey =
     '0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef'
@@ -82,7 +82,7 @@ describe('AuthService', () => {
         it('should return null if token is invalid', async () => {
             await expect(
                 service.validateToken('invalid.token.here')
-            ).rejects.toThrow(BadRequestException)
+            ).rejects.toThrow(UnauthorizedException)
         })
     })
 })

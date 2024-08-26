@@ -1,8 +1,4 @@
-import {
-    Injectable,
-    BadRequestException,
-    InternalServerErrorException,
-} from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import {
     LitNodeClientNodeJs,
     encryptToJson,
@@ -148,7 +144,7 @@ export class LitService {
                 },
                 chain: this.chainIdToLitChainName(chainId),
                 returnValueTest: {
-                    key: '',
+                    key: 'isMember',
                     comparator: '=',
                     value: 'true',
                 },
@@ -237,10 +233,10 @@ export class LitService {
     }
 
     async decryptFromJson(chainId: SupportedChainId, dataToDecrypt: any) {
-        const sessionSigs = await this.getSessionSigsViaAuthSig(chainId)
         if (!this.litNodeClient) {
             await this.connect()
         }
+        const sessionSigs = await this.getSessionSigsViaAuthSig(chainId)
         try {
             return await decryptFromJson({
                 litNodeClient: this.litNodeClient,
