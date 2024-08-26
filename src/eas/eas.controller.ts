@@ -10,6 +10,8 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { AuthService } from '../auth/auth.service'
 import { SignDelegatedAttestationDto } from './dto/sign-delegated-attestation.dto'
 import { SignDelegatedRevocationDto } from './dto/sign-delegated-revocation.dto'
+import { DecryptAttestationSecretDto } from './dto/decrypt-attestation-secret.dto'
+
 import { EasService } from '../eas/eas.service'
 import { LitService } from '../lit/lit.service'
 import { keccak256, toHex } from 'viem'
@@ -66,7 +68,7 @@ export class EasController {
     })
     @ApiResponse({
         status: 200,
-        description: 'Get signed delegated revocation via attestation uid',
+        description: 'Get signed delegated revocation by attestation uid',
     })
     @ApiParam({ name: 'uid', type: 'string', description: 'attestation uid' })
     @HttpCode(HttpStatus.OK)
@@ -77,12 +79,42 @@ export class EasController {
         const { chainId, siweJwt } = signDelegatedRevocationDto
         const siweJwtPayload = await this.authService.validateToken(siweJwt)
         const attestation = await this.easService.getAttestaion(chainId, uid)
-        await this.easService.revokeable(
+        await this.easService.checkAttestar(attestation)
+        await this.easService.checkRecipient(
             attestation,
             siweJwtPayload.sub as '0x${string}'
         )
         return this.dataUtilsService.convertBigIntsToStrings(
             await this.easService.getSignedDelegatedRevocation(chainId, uid)
         )
+    }
+
+    @Post(':uid/decrypt-attestation-secret')
+    @ApiOperation({
+        summary: 'decrypt attestation secret ',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'decrypt attestation secret via attestation uid',
+    })
+    @ApiParam({ name: 'uid', type: 'string', description: 'attestation uid' })
+    @HttpCode(HttpStatus.OK)
+    async decryptSecret(
+        @Param('uid') uid: string,
+        @Body() decryptAttestationSecretDto: DecryptAttestationSecretDto
+    ) {
+        const { chainId, siweJwt } = decryptAttestationSecretDto
+        const siweJwtPayload = await this.authService.validateToken(siweJwt)
+        const attestation = await this.easService.getAttestaion(chainId, uid)
+        await this.easService.checkAttestar(attestation)
+        await this.easService.checkRecipient(
+            attestation,
+            siweJwtPayload.sub as '0x${string}'
+        )
+        const decodedData = this.easService.decodettestationData(
+            attestation.data
+        )
+        const secret = decodedData[2].value.value
+        return await this.litService.decryptFromJson(chainId, secret)
     }
 }

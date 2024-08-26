@@ -19,6 +19,7 @@ import {
     NO_EXPIRATION,
     ZERO_BYTES32,
     Attestation,
+    SchemaDecodedItem,
 } from '@ethereum-attestation-service/eas-sdk'
 import { Address } from 'viem'
 import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
@@ -70,14 +71,18 @@ export class EasService {
     getAttester(chainId: SupportedChainId): Signer {
         return this.attesters.get(chainId)
     }
-
-    private encodeAttestationData(params: any[]): string {
+    encodeAttestationData(params: any[]): string {
         const schemaEncoder = new SchemaEncoder(SCHEMA_TYPES)
         return schemaEncoder.encodeData([
             { name: 'key', value: params[0], type: 'bytes32' },
             { name: 'provider', value: params[1], type: 'string' },
             { name: 'secret', value: params[2], type: 'string' },
         ])
+    }
+
+    decodettestationData(data: string): SchemaDecodedItem[] {
+        const schemaEncoder = new SchemaEncoder(SCHEMA_TYPES)
+        return schemaEncoder.decodeData(data)
     }
 
     private buildAttestationPayload(
@@ -97,7 +102,7 @@ export class EasService {
         }
     }
 
-    revokeable(attestation: Attestation, recipient: Address) {
+    checkAttestar(attestation: Attestation) {
         const privateKey = this.configService.get<string>(
             'wallet.privateKey'
         ) as '0x${string}'
@@ -106,6 +111,8 @@ export class EasService {
                 `We aren't attester of this attesation`
             )
         }
+    }
+    checkRecipient(attestation: Attestation, recipient: Address) {
         if (attestation.recipient !== recipient) {
             throw new ForbiddenException(
                 `You aren't recipient of this attesation`
