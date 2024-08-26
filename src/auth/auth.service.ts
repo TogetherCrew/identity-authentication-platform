@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common'
+import { Injectable, UnauthorizedException } from '@nestjs/common'
 import * as jwt from 'jsonwebtoken'
 import { JwtPayload } from './types/jwt-payload.type'
 import { ConfigService } from '@nestjs/config'
@@ -30,7 +30,7 @@ export class AuthService {
             ) as JwtPayload
         } catch (error) {
             this.logger.error(error, `Failed to validtae token`)
-            throw new BadRequestException(error.message)
+            throw new UnauthorizedException(error.message)
         }
     }
 
