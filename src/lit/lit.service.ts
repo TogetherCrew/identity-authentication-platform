@@ -14,9 +14,7 @@ import {
     AccessControlConditions,
     EvmContractConditions,
 } from '@lit-protocol/types'
-import {
-    PERMISSION_CONTRACTS,
-} from '../shared/constants/chain.constants'
+import { PERMISSION_CONTRACTS } from '../shared/constants/chain.constants'
 import { SupportedChainId, LitChain } from '../shared/types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
 import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
