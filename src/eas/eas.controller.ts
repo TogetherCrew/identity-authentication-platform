@@ -62,7 +62,7 @@ export class EasController {
         )
     }
 
-    @Post(':id/sign-delegated-revocation')
+    @Post(':uid/sign-delegated-revocation')
     @ApiOperation({
         summary: 'get signed delegated revocation ',
     })
@@ -73,7 +73,7 @@ export class EasController {
     @ApiParam({ name: 'uid', type: 'string', description: 'attestation uid' })
     @HttpCode(HttpStatus.OK)
     async revoke(
-        @Param() uid: string,
+        @Param('uid') uid: string,
         @Body() signDelegatedRevocationDto: SignDelegatedRevocationDto
     ) {
         const { chainId, siweJwt } = signDelegatedRevocationDto
