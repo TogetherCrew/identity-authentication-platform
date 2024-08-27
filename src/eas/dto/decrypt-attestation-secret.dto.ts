@@ -12,7 +12,7 @@ export class DecryptAttestationSecretDto {
     })
     @IsString()
     @IsNotEmpty()
-    @JwtProvider(AUTH_PROVIDERS.GOOGLE)
+    @JwtProvider(AUTH_PROVIDERS.SIWE)
     readonly siweJwt: string
     @ApiProperty({
         description: 'Chain Id',
