@@ -245,7 +245,9 @@ export class LitService {
             })
         } catch (error) {
             this.logger.error(error, `Failed to decrypt data`)
-            throw new InternalServerErrorException(`Failed to decrypt data`)
+            throw new InternalServerErrorException(
+                `Failed to decrypt data, Make sure you have right access!`
+            )
         }
     }
 

@@ -2,6 +2,8 @@ import {
     Injectable,
     BadRequestException,
     ForbiddenException,
+    InternalServerErrorException,
+    NotFoundException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { SCHEMA_TYPES } from './constants/attestation.constants'
@@ -21,9 +23,16 @@ import {
     Attestation,
     SchemaDecodedItem,
 } from '@ethereum-attestation-service/eas-sdk'
+import { AuthService } from '../auth/auth.service'
+import { LitService } from '../lit/lit.service'
+import { DataUtilsService } from '../utils/data-utils.service'
 import { Address } from 'viem'
 import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
 import { privateKeyToAddress } from 'viem/accounts'
+import { SignDelegatedAttestationDto } from './dto/sign-delegated-attestation.dto'
+import { SignDelegatedRevocationDto } from './dto/sign-delegated-revocation.dto'
+import { DecryptAttestationSecretDto } from './dto/decrypt-attestation-secret.dto'
+import { keccak256, toHex } from 'viem'
 
 @Injectable()
 export class EasService {
@@ -31,6 +40,9 @@ export class EasService {
     private contracts: Map<number, EAS> = new Map()
 
     constructor(
+        private readonly authService: AuthService,
+        private readonly litService: LitService,
+        private readonly dataUtilsService: DataUtilsService,
         private readonly ethersUtilsService: EthersUtilsService,
         private readonly configService: ConfigService,
         @InjectPinoLogger(EasService.name)
@@ -80,7 +92,7 @@ export class EasService {
         ])
     }
 
-    decodettestationData(data: string): SchemaDecodedItem[] {
+    decodeAttestationData(data: string): SchemaDecodedItem[] {
         const schemaEncoder = new SchemaEncoder(SCHEMA_TYPES)
         return schemaEncoder.decodeData(data)
     }
@@ -102,11 +114,8 @@ export class EasService {
         }
     }
 
-    checkAttestar(attestation: Attestation) {
-        const privateKey = this.configService.get<string>(
-            'wallet.privateKey'
-        ) as '0x${string}'
-        if (attestation.attester !== privateKeyToAddress(privateKey)) {
+    checkAttestar(attestation: Attestation, attester: Address) {
+        if (attestation.attester !== attester) {
             throw new BadRequestException(
                 `We aren't attester of this attesation`
             )
@@ -124,58 +133,128 @@ export class EasService {
             const eas = this.getContract(chainId)
             return await eas.getAttestation(uid)
         } catch (error) {
-            this.logger.error(error, 'Failed to get attestation')
-            throw new BadRequestException(`Failed to get attestation`)
+            this.logger.error(error, "Attestation didn't find")
+            throw new NotFoundException("Attestation didn't find")
         }
     }
 
     async getSignedDelegatedAttestation(
-        chainId: SupportedChainId,
-        params: any[],
-        recipient: Address
+        signDelegatedAttestationDto: SignDelegatedAttestationDto
     ) {
         try {
+            const { chainId, anyJwt, siweJwt } = signDelegatedAttestationDto
+            const siweJwtPayload = await this.authService.validateToken(siweJwt)
+            const anyJwtPayload = await this.authService.validateToken(anyJwt)
+            const secret = await this.litService.encryptToJson(
+                chainId,
+                {
+                    id: anyJwtPayload.sub,
+                    provider: anyJwtPayload.provider,
+                },
+                siweJwtPayload.sub as '0x${string}'
+            )
             const eas = this.getContract(chainId)
-            const encodedData = this.encodeAttestationData(params)
+            const encodedData = this.encodeAttestationData([
+                keccak256(toHex(anyJwtPayload.sub)),
+                anyJwtPayload.provider,
+                secret,
+            ])
             const attestationPayload = this.buildAttestationPayload(
                 chainId,
                 encodedData,
-                recipient
+                siweJwtPayload.sub as '0x${string}'
             )
             const delegated = await eas.getDelegated()
             const attester = this.getAttester(chainId)
 
-            return await delegated.signDelegatedAttestation(
-                attestationPayload,
-                attester
+            const signedDelegatedAttestation =
+                await delegated.signDelegatedAttestation(
+                    attestationPayload,
+                    attester
+                )
+            return this.dataUtilsService.convertBigIntsToStrings(
+                signedDelegatedAttestation
             )
         } catch (error) {
             this.logger.error(error, 'Failed to signed delegated attestation')
-            throw new BadRequestException(
+            throw new InternalServerErrorException(
                 `Failed to signed delegated attestation`
             )
         }
     }
 
-    async getSignedDelegatedRevocation(chainId: SupportedChainId, uid: string) {
+    async getSignedDelegatedRevocation(
+        signDelegatedRevocationDto: SignDelegatedRevocationDto,
+        uid: string
+    ) {
         try {
+            const { chainId, siweJwt } = signDelegatedRevocationDto
+            const siweJwtPayload = await this.authService.validateToken(siweJwt)
+            const attestation = await this.getAttestaion(chainId, uid)
+            await this.checkAttestar(
+                attestation,
+                privateKeyToAddress(
+                    this.configService.get<string>(
+                        'wallet.privateKey'
+                    ) as '0x${string}'
+                )
+            )
+            await this.checkRecipient(
+                attestation,
+                siweJwtPayload.sub as '0x${string}'
+            )
             const eas = this.getContract(chainId)
             const delegated = await eas.getDelegated()
             const attester = this.getAttester(chainId)
+            const signedDelegatedRevocation =
+                await delegated.signDelegatedRevocation(
+                    {
+                        schema: EAS_CONTRACTS[chainId].metadata.schema,
+                        uid,
+                        deadline: 0n,
+                        value: 0n,
+                    },
+                    attester
+                )
 
-            return await delegated.signDelegatedRevocation(
-                {
-                    schema: EAS_CONTRACTS[chainId].metadata.schema,
-                    uid,
-                    deadline: 0n,
-                    value: 0n,
-                },
-                attester
+            return this.dataUtilsService.convertBigIntsToStrings(
+                signedDelegatedRevocation
             )
         } catch (error) {
             this.logger.error(error, 'Failed to signed delegated revocation')
-            throw new BadRequestException(
+            throw new InternalServerErrorException(
                 `Failed to signed delegated revocation`
+            )
+        }
+    }
+
+    async decryptAttestationSecret(
+        decryptAttestationSecretDto: DecryptAttestationSecretDto,
+        uid: string
+    ) {
+        try {
+            const { chainId, siweJwt } = decryptAttestationSecretDto
+            const siweJwtPayload = await this.authService.validateToken(siweJwt)
+            const attestation = await this.getAttestaion(chainId, uid)
+            await this.checkAttestar(
+                attestation,
+                privateKeyToAddress(
+                    this.configService.get<string>(
+                        'wallet.privateKey'
+                    ) as '0x${string}'
+                )
+            )
+            await this.checkRecipient(
+                attestation,
+                siweJwtPayload.sub as '0x${string}'
+            )
+            const decodedData = this.decodeAttestationData(attestation.data)
+            const secret = decodedData[2].value.value
+            return await this.litService.decryptFromJson(chainId, secret)
+        } catch (error) {
+            this.logger.error(error, 'Failed to decrypt attestation secret')
+            throw new InternalServerErrorException(
+                `Failed to decrypt attestation secret`
             )
         }
     }

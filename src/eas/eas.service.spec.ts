@@ -6,6 +6,9 @@ import { generatePrivateKey } from 'viem/accounts'
 // import { sepolia } from 'viem/chains'
 import { PinoLogger, LoggerModule } from 'nestjs-pino'
 import { EthersUtilsService } from '../utils/ethers.utils.service'
+import { AuthService } from '../auth/auth.service'
+import { LitService } from '../lit/lit.service'
+import { DataUtilsService } from '../utils/data-utils.service'
 const mockPrivateKey = generatePrivateKey()
 
 const mockConfigService = {
@@ -24,6 +27,9 @@ describe('EasService', () => {
             providers: [
                 EasService,
                 EthersUtilsService,
+                AuthService,
+                LitService,
+                DataUtilsService,
                 { provide: ConfigService, useValue: mockConfigService },
                 { provide: PinoLogger, useValue: loggerMock },
             ],
