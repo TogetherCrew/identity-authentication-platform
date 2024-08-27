@@ -8,6 +8,7 @@ import { PinoLogger, LoggerModule } from 'nestjs-pino'
 import { EthersUtilsService } from '../utils/ethers.utils.service'
 import { AuthService } from '../auth/auth.service'
 import { LitService } from '../lit/lit.service'
+import { DataUtilsService } from '../utils/data-utils.service'
 const mockPrivateKey = generatePrivateKey()
 
 const mockConfigService = {
@@ -28,6 +29,7 @@ describe('EasService', () => {
                 EthersUtilsService,
                 AuthService,
                 LitService,
+                DataUtilsService,
                 { provide: ConfigService, useValue: mockConfigService },
                 { provide: PinoLogger, useValue: loggerMock },
             ],
