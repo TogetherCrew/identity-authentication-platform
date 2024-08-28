@@ -1943,6 +1943,7 @@ export const ACCESS_MANAGER_CONTRACTS = {
                 stateMutability: 'view',
                 type: 'function',
             },
+            HasRoleRoleId: '3',
         },
     },
 }
