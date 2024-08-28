@@ -172,22 +172,22 @@ export class LitService {
                     value,
                 },
             },
-            { operator: 'or' },
-            {
-                contractAddress: '',
-                standardContractType: '',
-                chain: this.chainIdToLitChainName(chainId),
-                method: '',
-                parameters: [':userAddress'],
-                returnValueTest: {
-                    comparator: '=',
-                    value: privateKeyToAddress(
-                        this.configService.get<string>(
-                            'wallet.privateKey'
-                        ) as '0x${string}'
-                    ),
-                },
-            },
+            // { operator: 'or' },
+            // {
+            //     contractAddress: '',
+            //     standardContractType: '',
+            //     chain: this.chainIdToLitChainName(chainId),
+            //     method: '',
+            //     parameters: [':userAddress'],
+            //     returnValueTest: {
+            //         comparator: '=',
+            //         value: privateKeyToAddress(
+            //             this.configService.get<string>(
+            //                 'wallet.privateKey'
+            //             ) as '0x${string}'
+            //         ),
+            //     },
+            // },
         ]
     }
     async getSessionSigsViaAuthSig(chainId: SupportedChainId) {
