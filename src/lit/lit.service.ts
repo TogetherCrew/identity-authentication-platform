@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common'
+import {
+    Injectable,
+    InternalServerErrorException,
+    UnauthorizedException,
+    HttpStatus,
+} from '@nestjs/common'
 import {
     LitNodeClientNodeJs,
     encryptToJson,
@@ -14,7 +19,7 @@ import { PERMISSION_CONTRACTS } from '../shared/constants/chain.constants'
 import { SupportedChainId, LitChain } from '../shared/types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
 import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
-import { Address, keccak256, toHex } from 'viem'
+import { Address, keccak256, toHex, numberToHex } from 'viem'
 import { EthersUtilsService } from '../utils/ethers.utils.service'
 import { LitNetwork } from '@lit-protocol/constants'
 import {
@@ -106,7 +111,7 @@ export class LitService {
                 contractAddress: '0x946F4b6EA3AD07Cd4eed93D1baD54Ac2c948e0C0',
                 functionName: 'hasRole',
                 functionParams: [
-                    '3',
+                    numberToHex(3, { size: 64 }),
                     privateKeyToAddress(
                         this.configService.get<string>(
                             'wallet.privateKey'
@@ -245,9 +250,11 @@ export class LitService {
             })
         } catch (error) {
             this.logger.error(error, `Failed to decrypt data`)
-            throw new InternalServerErrorException(
-                `Failed to decrypt data, Make sure you have right access!`
-            )
+            if (error.status === HttpStatus.UNAUTHORIZED) {
+                throw new UnauthorizedException(error.message)
+            } else {
+                throw new InternalServerErrorException('Failed to decrypt data')
+            }
         }
     }
 
