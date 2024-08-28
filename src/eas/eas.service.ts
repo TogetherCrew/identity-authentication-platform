@@ -141,32 +141,31 @@ export class EasService {
     async getSignedDelegatedAttestation(
         signDelegatedAttestationDto: SignDelegatedAttestationDto
     ) {
+        const { chainId, anyJwt, siweJwt } = signDelegatedAttestationDto
+        const siweJwtPayload = await this.authService.validateToken(siweJwt)
+        const anyJwtPayload = await this.authService.validateToken(anyJwt)
+        const secret = await this.litService.encryptToJson(
+            chainId,
+            {
+                id: anyJwtPayload.sub,
+                provider: anyJwtPayload.provider,
+            },
+            siweJwtPayload.sub as '0x${string}'
+        )
+        const eas = this.getContract(chainId)
+        const encodedData = this.encodeAttestationData([
+            keccak256(toHex(anyJwtPayload.sub)),
+            anyJwtPayload.provider,
+            secret,
+        ])
+        const attestationPayload = this.buildAttestationPayload(
+            chainId,
+            encodedData,
+            siweJwtPayload.sub as '0x${string}'
+        )
+        const delegated = await eas.getDelegated()
+        const attester = this.getAttester(chainId)
         try {
-            const { chainId, anyJwt, siweJwt } = signDelegatedAttestationDto
-            const siweJwtPayload = await this.authService.validateToken(siweJwt)
-            const anyJwtPayload = await this.authService.validateToken(anyJwt)
-            const secret = await this.litService.encryptToJson(
-                chainId,
-                {
-                    id: anyJwtPayload.sub,
-                    provider: anyJwtPayload.provider,
-                },
-                siweJwtPayload.sub as '0x${string}'
-            )
-            const eas = this.getContract(chainId)
-            const encodedData = this.encodeAttestationData([
-                keccak256(toHex(anyJwtPayload.sub)),
-                anyJwtPayload.provider,
-                secret,
-            ])
-            const attestationPayload = this.buildAttestationPayload(
-                chainId,
-                encodedData,
-                siweJwtPayload.sub as '0x${string}'
-            )
-            const delegated = await eas.getDelegated()
-            const attester = this.getAttester(chainId)
-
             const signedDelegatedAttestation =
                 await delegated.signDelegatedAttestation(
                     attestationPayload,
@@ -187,25 +186,25 @@ export class EasService {
         signDelegatedRevocationDto: SignDelegatedRevocationDto,
         uid: string
     ) {
+        const { chainId, siweJwt } = signDelegatedRevocationDto
+        const siweJwtPayload = await this.authService.validateToken(siweJwt)
+        const attestation = await this.getAttestaion(chainId, uid)
+        await this.checkAttestar(
+            attestation,
+            privateKeyToAddress(
+                this.configService.get<string>(
+                    'wallet.privateKey'
+                ) as '0x${string}'
+            )
+        )
+        await this.checkRecipient(
+            attestation,
+            siweJwtPayload.sub as '0x${string}'
+        )
+        const eas = this.getContract(chainId)
+        const delegated = await eas.getDelegated()
+        const attester = this.getAttester(chainId)
         try {
-            const { chainId, siweJwt } = signDelegatedRevocationDto
-            const siweJwtPayload = await this.authService.validateToken(siweJwt)
-            const attestation = await this.getAttestaion(chainId, uid)
-            await this.checkAttestar(
-                attestation,
-                privateKeyToAddress(
-                    this.configService.get<string>(
-                        'wallet.privateKey'
-                    ) as '0x${string}'
-                )
-            )
-            await this.checkRecipient(
-                attestation,
-                siweJwtPayload.sub as '0x${string}'
-            )
-            const eas = this.getContract(chainId)
-            const delegated = await eas.getDelegated()
-            const attester = this.getAttester(chainId)
             const signedDelegatedRevocation =
                 await delegated.signDelegatedRevocation(
                     {
@@ -216,7 +215,6 @@ export class EasService {
                     },
                     attester
                 )
-
             return this.dataUtilsService.convertBigIntsToStrings(
                 signedDelegatedRevocation
             )
@@ -232,30 +230,23 @@ export class EasService {
         decryptAttestationSecretDto: DecryptAttestationSecretDto,
         uid: string
     ) {
-        try {
-            const { chainId, siweJwt } = decryptAttestationSecretDto
-            const siweJwtPayload = await this.authService.validateToken(siweJwt)
-            const attestation = await this.getAttestaion(chainId, uid)
-            await this.checkAttestar(
-                attestation,
-                privateKeyToAddress(
-                    this.configService.get<string>(
-                        'wallet.privateKey'
-                    ) as '0x${string}'
-                )
+        const { chainId, siweJwt } = decryptAttestationSecretDto
+        const siweJwtPayload = await this.authService.validateToken(siweJwt)
+        const attestation = await this.getAttestaion(chainId, uid)
+        await this.checkAttestar(
+            attestation,
+            privateKeyToAddress(
+                this.configService.get<string>(
+                    'wallet.privateKey'
+                ) as '0x${string}'
             )
-            await this.checkRecipient(
-                attestation,
-                siweJwtPayload.sub as '0x${string}'
-            )
-            const decodedData = this.decodeAttestationData(attestation.data)
-            const secret = decodedData[2].value.value
-            return await this.litService.decryptFromJson(chainId, secret)
-        } catch (error) {
-            this.logger.error(error, 'Failed to decrypt attestation secret')
-            throw new InternalServerErrorException(
-                `Failed to decrypt attestation secret`
-            )
-        }
+        )
+        await this.checkRecipient(
+            attestation,
+            siweJwtPayload.sub as '0x${string}'
+        )
+        const decodedData = this.decodeAttestationData(attestation.data)
+        const secret = decodedData[2].value.value
+        return await this.litService.decryptFromJson(chainId, secret)
     }
 }
