@@ -11,15 +11,15 @@ import {
 } from '@lit-protocol/lit-node-client-nodejs'
 import { ConfigService } from '@nestjs/config'
 import { networks } from './constants/network.constants'
+import { UnifiedAccessControlConditions } from '@lit-protocol/types'
 import {
-    AccessControlConditions,
-    EvmContractConditions,
-} from '@lit-protocol/types'
-import { PERMISSION_CONTRACTS } from '../shared/constants/chain.constants'
+    PERMISSION_CONTRACTS,
+    ACCESS_MANAGER_CONTRACTS,
+} from '../shared/constants/chain.constants'
 import { SupportedChainId, LitChain } from '../shared/types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
 import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
-import { Address, keccak256, toHex, numberToHex } from 'viem'
+import { Address, keccak256, toHex } from 'viem'
 import { EthersUtilsService } from '../utils/ethers.utils.service'
 import { LitNetwork } from '@lit-protocol/constants'
 import {
@@ -28,7 +28,6 @@ import {
     createSiweMessage,
     generateAuthSig,
 } from '@lit-protocol/auth-helpers'
-import { privateKeyToAddress } from 'viem/accounts'
 
 @Injectable()
 export class LitService {
@@ -64,12 +63,26 @@ export class LitService {
             }
         }
     }
-    generateEvmContractConditions(
+    generateunifiedAccessControlConditions(
         chainId: SupportedChainId,
         userAddress: Address
-    ): EvmContractConditions {
+    ): UnifiedAccessControlConditions {
         return [
             {
+                conditionType: 'evmBasic',
+                contractAddress: '',
+                standardContractType: '',
+                chain: this.chainIdToLitChainName(chainId),
+                method: '',
+                parameters: [':userAddress'],
+                returnValueTest: {
+                    comparator: '=',
+                    value: userAddress,
+                },
+            },
+            { operator: 'or' },
+            {
+                conditionType: 'evmContract',
                 contractAddress: PERMISSION_CONTRACTS[chainId].address,
                 functionName:
                     PERMISSION_CONTRACTS[chainId].metadata
@@ -85,68 +98,18 @@ export class LitService {
                 },
             },
             { operator: 'or' },
-            // {
-            //     contractAddress: ACCESS_MANAGER_CONTRACTS[chainId].address,
-            //     functionName:
-            //         ACCESS_MANAGER_CONTRACTS[chainId].metadata
-            //             .hasRoleFunctionName,
-            //     functionParams: [
-            //         '3',
-            //         privateKeyToAddress(
-            //             this.configService.get<string>(
-            //                 'wallet.privateKey'
-            //             ) as '0x${string}'
-            //         ),
-            //     ],
-            //     functionAbi:
-            //         ACCESS_MANAGER_CONTRACTS[chainId].metadata.hasRoleAbi,
-            //     chain: this.chainIdToLitChainName(chainId),
-            //     returnValueTest: {
-            //         key: '',
-            //         comparator: '=',
-            //         value: 'true',
-            //     },
-            // },
             {
-                contractAddress: '0x946F4b6EA3AD07Cd4eed93D1baD54Ac2c948e0C0',
-                functionName: 'hasRole',
+                conditionType: 'evmContract',
+                contractAddress: ACCESS_MANAGER_CONTRACTS[chainId].address,
+                functionName:
+                    ACCESS_MANAGER_CONTRACTS[chainId].metadata
+                        .hasRoleFunctionName,
                 functionParams: [
-                    numberToHex(3, { size: 64 }),
-                    privateKeyToAddress(
-                        this.configService.get<string>(
-                            'wallet.privateKey'
-                        ) as '0x${string}'
-                    ),
+                    ACCESS_MANAGER_CONTRACTS[chainId].metadata.HasRoleRoleId,
+                    ':userAddress',
                 ],
-                functionAbi: {
-                    inputs: [
-                        {
-                            internalType: 'uint64',
-                            name: 'roleId',
-                            type: 'uint64',
-                        },
-                        {
-                            internalType: 'address',
-                            name: 'account',
-                            type: 'address',
-                        },
-                    ],
-                    name: 'hasRole',
-                    outputs: [
-                        {
-                            internalType: 'bool',
-                            name: 'isMember',
-                            type: 'bool',
-                        },
-                        {
-                            internalType: 'uint32',
-                            name: 'executionDelay',
-                            type: 'uint32',
-                        },
-                    ],
-                    stateMutability: 'view',
-                    type: 'function',
-                },
+                functionAbi:
+                    ACCESS_MANAGER_CONTRACTS[chainId].metadata.hasRoleAbi,
                 chain: this.chainIdToLitChainName(chainId),
                 returnValueTest: {
                     key: 'isMember',
@@ -154,40 +117,6 @@ export class LitService {
                     value: 'true',
                 },
             },
-        ]
-    }
-    generateAccessControlConditions(
-        chainId: SupportedChainId,
-        value: Address
-    ): AccessControlConditions {
-        return [
-            {
-                contractAddress: '',
-                standardContractType: '',
-                chain: this.chainIdToLitChainName(chainId),
-                method: '',
-                parameters: [':userAddress'],
-                returnValueTest: {
-                    comparator: '=',
-                    value,
-                },
-            },
-            // { operator: 'or' },
-            // {
-            //     contractAddress: '',
-            //     standardContractType: '',
-            //     chain: this.chainIdToLitChainName(chainId),
-            //     method: '',
-            //     parameters: [':userAddress'],
-            //     returnValueTest: {
-            //         comparator: '=',
-            //         value: privateKeyToAddress(
-            //             this.configService.get<string>(
-            //                 'wallet.privateKey'
-            //             ) as '0x${string}'
-            //         ),
-            //     },
-            // },
         ]
     }
     async getSessionSigsViaAuthSig(chainId: SupportedChainId) {
@@ -263,23 +192,18 @@ export class LitService {
         dataToEncrypt: any,
         userAddress: Address
     ): Promise<string> {
-        const evmContractConditions = this.generateEvmContractConditions(
-            chainId,
-            userAddress
-        )
-        const accessControlConditions = this.generateAccessControlConditions(
-            chainId,
-            userAddress
-        )
         if (!this.litNodeClient) {
             await this.connect()
         }
         try {
             return await encryptToJson({
                 string: JSON.stringify(dataToEncrypt),
-                evmContractConditions,
-                accessControlConditions,
                 litNodeClient: this.litNodeClient,
+                unifiedAccessControlConditions:
+                    this.generateunifiedAccessControlConditions(
+                        chainId,
+                        userAddress
+                    ),
                 chain: this.chainIdToLitChainName(chainId),
             })
         } catch (error) {

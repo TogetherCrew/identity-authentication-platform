@@ -1,14 +1,4 @@
-import { LitNodeClientConfig } from '@lit-protocol/types'
 import { LitNetwork, LIT_RPC } from '@lit-protocol/constants'
-
-// // export const networkConfigs: LitNodeClientConfig[] = [
-// //     {
-// //         alertWhenUnauthorized: false,
-// //         litNetwork: LitNetwork.DatilDev,
-// //         debug: true,
-// //     },
-
-// ]
 
 export const networks = {
     'datil-dev': {
