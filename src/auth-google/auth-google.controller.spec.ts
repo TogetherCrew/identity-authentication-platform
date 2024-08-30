@@ -3,7 +3,7 @@ import { AuthGoogleController } from './auth-google.controller'
 import { OAuthService } from '../auth/oAuth.service'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { HttpStatus, ForbiddenException } from '@nestjs/common'
-import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
+import { OAUTH_METHODS } from '../auth/constants/auth.constants'
 
 describe('AuthGoogleController', () => {
     let controller: AuthGoogleController
@@ -41,7 +41,7 @@ describe('AuthGoogleController', () => {
             expect(mockSession.state).toEqual('mock-state')
             expect(mockCryptoService.generateState).toHaveBeenCalled()
             expect(mockOAuthService.generateRedirectUrl).toHaveBeenCalledWith(
-                AUTH_PROVIDERS.GOOGLE,
+                OAUTH_METHODS.GOOGLE,
                 'mock-state'
             )
         })
@@ -65,7 +65,7 @@ describe('AuthGoogleController', () => {
                 'mock-state',
                 'mock-state',
                 'valid-code',
-                AUTH_PROVIDERS.GOOGLE
+                OAUTH_METHODS.GOOGLE
             )
         })
 

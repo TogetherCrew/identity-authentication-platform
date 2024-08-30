@@ -10,3 +10,15 @@ export const OAUTH_URLS = {
         userInfoUrl: 'https://discord.com/api/users/@me',
     },
 }
+
+export const AUTH_METHODS = {
+    SIWE: 'siwe',
+}
+export const OAUTH_METHODS = {
+    DISCORD: 'discord',
+    GOOGLE: 'google',
+}
+
+export const VERIFICATION_METHODS = {
+    DISCOURSE: 'discourse',
+}

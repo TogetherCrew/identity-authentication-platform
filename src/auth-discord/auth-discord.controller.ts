@@ -15,11 +15,11 @@ import {
 import { OAuthService } from '../auth/oAuth.service'
 import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
-import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
+import { OAUTH_METHODS } from '../auth/constants/auth.constants'
 import { JwtResponse } from '../auth//dto/jwt-response.dto'
 
-@ApiTags(`${AUTH_PROVIDERS.DISCORD} Authentication`)
-@Controller(`auth/${AUTH_PROVIDERS.DISCORD}`)
+@ApiTags(`${OAUTH_METHODS.DISCORD} Authentication`)
+@Controller(`auth/${OAUTH_METHODS.DISCORD}`)
 export class AuthDiscordController {
     constructor(
         private readonly oAuthService: OAuthService,
@@ -33,7 +33,7 @@ export class AuthDiscordController {
     redirectToDiscord(@Session() session: any) {
         const state = this.cryptoService.generateState()
         const url = this.oAuthService.generateRedirectUrl(
-            AUTH_PROVIDERS.DISCORD,
+            OAUTH_METHODS.DISCORD,
             state
         )
         session.state = state
@@ -55,7 +55,7 @@ export class AuthDiscordController {
             state,
             session.state,
             code,
-            AUTH_PROVIDERS.DISCORD
+            OAUTH_METHODS.DISCORD
         )
         return {
             url: redirectUrl,

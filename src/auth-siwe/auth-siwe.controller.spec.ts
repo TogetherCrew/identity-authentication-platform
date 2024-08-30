@@ -3,7 +3,7 @@ import { AuthSiweController } from './auth-siwe.controller'
 import { SiweService } from './siwe.service'
 import { AuthService } from '../auth/auth.service'
 import { VerifySiweDto } from './dto/verify-siwe.dto'
-import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
+import { AUTH_METHODS } from '../auth/constants/auth.constants'
 import { parseSiweMessage } from 'viem/siwe'
 
 jest.mock('viem/siwe', () => ({
@@ -29,7 +29,7 @@ describe('AuthSiweController', () => {
                 {
                     provide: AuthService,
                     useValue: {
-                        generateJwt: jest.fn(),
+                        generateUserJWT: jest.fn(),
                     },
                 },
             ],
@@ -66,7 +66,7 @@ describe('AuthSiweController', () => {
             jest.spyOn(siweService, 'verifySiweMessage').mockResolvedValue(
                 undefined
             )
-            jest.spyOn(authService, 'generateJwt').mockResolvedValue(jwt)
+            jest.spyOn(authService, 'generateUserJWT').mockResolvedValue(jwt)
             ;(parseSiweMessage as jest.Mock).mockReturnValue({ address })
 
             const result = await controller.verifySiwe(verifySiweDto)
@@ -77,9 +77,9 @@ describe('AuthSiweController', () => {
                 verifySiweDto.signature,
                 verifySiweDto.chainId
             )
-            expect(authService.generateJwt).toHaveBeenCalledWith(
+            expect(authService.generateUserJWT).toHaveBeenCalledWith(
                 address,
-                AUTH_PROVIDERS.SIWE
+                AUTH_METHODS.SIWE
             )
         })
     })

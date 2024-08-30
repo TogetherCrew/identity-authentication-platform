@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsString, IsNotEmpty, IsNumber } from 'class-validator'
 import { JwtProvider } from '../../shared/decorators/jwt-provider.decorator'
-import { AUTH_PROVIDERS } from '../../auth/constants/provider.constants'
+import { AUTH_METHODS } from '../../auth/constants/auth.constants'
 
 export class SignDelegatedAttestationDto {
     @ApiProperty({
@@ -12,7 +12,7 @@ export class SignDelegatedAttestationDto {
     })
     @IsString()
     @IsNotEmpty()
-    @JwtProvider(AUTH_PROVIDERS.SIWE)
+    @JwtProvider(AUTH_METHODS.SIWE)
     readonly siweJwt: string
     @ApiProperty({
         description: 'The siwe JWT or any provider JWT.',

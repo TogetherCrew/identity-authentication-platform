@@ -3,7 +3,7 @@ import { AuthDiscordController } from './auth-discord.controller'
 import { OAuthService } from '../auth/oAuth.service'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { HttpStatus, ForbiddenException } from '@nestjs/common'
-import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
+import { OAUTH_METHODS } from '../auth/constants/auth.constants'
 
 describe('AuthDiscordController', () => {
     let controller: AuthDiscordController
@@ -41,7 +41,7 @@ describe('AuthDiscordController', () => {
             expect(mockSession.state).toEqual('mock-state')
             expect(mockCryptoService.generateState).toHaveBeenCalled()
             expect(mockOAuthService.generateRedirectUrl).toHaveBeenCalledWith(
-                AUTH_PROVIDERS.DISCORD,
+                OAUTH_METHODS.DISCORD,
                 'mock-state'
             )
         })
@@ -65,7 +65,7 @@ describe('AuthDiscordController', () => {
                 'mock-state',
                 'mock-state',
                 'valid-code',
-                AUTH_PROVIDERS.DISCORD
+                OAUTH_METHODS.DISCORD
             )
         })
         it('should throw HttpException if state is invalid', async () => {

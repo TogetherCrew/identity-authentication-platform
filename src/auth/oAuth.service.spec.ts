@@ -6,8 +6,8 @@ import { of } from 'rxjs'
 import { AxiosResponse } from 'axios'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
 import { AuthService } from './auth.service'
-import { AUTH_PROVIDERS } from './constants/provider.constants'
 import { PinoLogger, LoggerModule } from 'nestjs-pino'
+import { OAUTH_METHODS } from './constants/auth.constants'
 
 describe('OAuthService', () => {
     let service: OAuthService
@@ -46,7 +46,7 @@ describe('OAuthService', () => {
     }
 
     const mockAuthService = {
-        generateJwt: jest.fn().mockResolvedValue('mock-jwt'),
+        generateUserJWT: jest.fn().mockResolvedValue('mock-jwt'),
     }
 
     const mockCryptoService = {
@@ -76,7 +76,7 @@ describe('OAuthService', () => {
     describe('OAuth token exchange', () => {
         it('should exchange code for token successfully', async () => {
             const result = await service.exchangeCodeForToken(
-                AUTH_PROVIDERS.GOOGLE,
+                OAUTH_METHODS.GOOGLE,
                 'mock-code'
             )
             expect(result).toEqual({ access_token: 'mock-access-token' })
@@ -90,7 +90,7 @@ describe('OAuthService', () => {
     describe('Retrieve user information', () => {
         it('should retrieve user information successfully', async () => {
             const result = await service.getUserInfo(
-                AUTH_PROVIDERS.GOOGLE,
+                OAUTH_METHODS.GOOGLE,
                 'mock-access-token'
             )
             expect(result).toEqual({ id: 'mock-id' })
@@ -113,7 +113,12 @@ describe('OAuthService', () => {
                 'mock-state',
                 'mock-state',
                 'valid-code',
-                AUTH_PROVIDERS.GOOGLE
+                OAUTH_METHODS.GOOGLE
+            )
+            console.log('result', result)
+            expect(mockAuthService.generateUserJWT).toHaveBeenCalledWith(
+                'user-id',
+                OAUTH_METHODS.GOOGLE
             )
             expect(result).toEqual(
                 'http://localhost:3000/callback?jwt=mock-jwt'
@@ -122,9 +127,9 @@ describe('OAuthService', () => {
                 'mock-state',
                 'mock-state'
             )
-            expect(mockAuthService.generateJwt).toHaveBeenCalledWith(
+            expect(mockAuthService.generateUserJWT).toHaveBeenCalledWith(
                 'user-id',
-                AUTH_PROVIDERS.GOOGLE
+                OAUTH_METHODS.GOOGLE
             )
         })
         // it('should handle errors during OAuth2 callback processing', async () => {

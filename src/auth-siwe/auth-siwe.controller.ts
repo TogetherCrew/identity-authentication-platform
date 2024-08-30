@@ -15,13 +15,14 @@ import {
 } from '@nestjs/swagger'
 import { AuthService } from '../auth/auth.service'
 import { VerifySiweDto } from './dto/verify-siwe.dto'
-import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
 import { JwtResponse } from '../auth//dto/jwt-response.dto'
 import { parseSiweMessage } from 'viem/siwe'
 import { NonceResponse } from './dto/nonce.dto'
+import { JWT_PROVIDERS } from '../auth/constants/jwt.constants'
+import { AUTH_METHODS } from 'src/auth/constants/auth.constants'
 
-@ApiTags(`${AUTH_PROVIDERS.SIWE} Authentication`)
-@Controller(`auth/${AUTH_PROVIDERS.SIWE}`)
+@ApiTags(`${JWT_PROVIDERS.SIWE} Authentication`)
+@Controller(`auth/${AUTH_METHODS.SIWE}`)
 export class AuthSiweController {
     constructor(
         private readonly siweService: SiweService,
@@ -49,9 +50,9 @@ export class AuthSiweController {
     async verifySiwe(@Body() verifySiweDto: VerifySiweDto) {
         const { message, signature, chainId } = verifySiweDto
         await this.siweService.verifySiweMessage(message, signature, chainId)
-        const jwt = await this.authService.generateJwt(
+        const jwt = this.authService.generateUserJWT(
             parseSiweMessage(message).address,
-            AUTH_PROVIDERS.SIWE
+            AUTH_METHODS.SIWE
         )
         return { jwt }
     }

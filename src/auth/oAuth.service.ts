@@ -8,13 +8,14 @@ import { HttpService } from '@nestjs/axios'
 import { lastValueFrom } from 'rxjs'
 import { ConfigService } from '@nestjs/config'
 import * as querystring from 'querystring'
-import { OAUTH_URLS } from './constants/oAuth.constants'
+import { OAUTH_URLS } from './constants/auth.constants'
 import { AuthService } from '../auth/auth.service'
 import { CryptoUtilsService } from '../utils/crypto-utils.service'
-import { AuthProvider } from './types/auth-provider.type'
+import { OAuthMethod } from './types/auth.type'
 
 @Injectable()
 export class OAuthService {
+    public frontendUrl: string
     constructor(
         private readonly httpService: HttpService,
         private readonly configService: ConfigService,
@@ -22,21 +23,23 @@ export class OAuthService {
         private readonly cryptoService: CryptoUtilsService,
         @InjectPinoLogger(OAuthService.name)
         private readonly logger: PinoLogger
-    ) {}
+    ) {
+        this.frontendUrl = this.configService.get<string>('app.frontEndURL')
+    }
 
-    getTokenUrl(provider: AuthProvider): string {
+    getTokenUrl(provider: OAuthMethod): string {
         return OAUTH_URLS[provider].tokenUrl
     }
 
-    getUserInfoUrl(provider: AuthProvider): string {
+    getUserInfoUrl(provider: OAuthMethod): string {
         return OAUTH_URLS[provider].userInfoUrl
     }
 
-    getOAuthBaseURL(provider: AuthProvider): string {
+    getOAuthBaseURL(provider: OAuthMethod): string {
         return OAUTH_URLS[provider].authUrl
     }
 
-    generateRedirectUrl(provider: AuthProvider, state: string): string {
+    generateRedirectUrl(provider: OAuthMethod, state: string): string {
         const params = {
             client_id: this.configService.get<string>(`${provider}.clientId`),
             redirect_uri: this.configService.get<string>(
@@ -52,7 +55,7 @@ export class OAuthService {
     }
 
     async exchangeCodeForToken(
-        provider: AuthProvider,
+        provider: OAuthMethod,
         code: string
     ): Promise<{ access_token: string }> {
         const clientId = this.configService.get<string>(`${provider}.clientId`)
@@ -93,7 +96,7 @@ export class OAuthService {
     }
 
     async getUserInfo(
-        provider: AuthProvider,
+        provider: OAuthMethod,
         accessToken: string
     ): Promise<any> {
         const userInfoUrl = this.getUserInfoUrl(provider)
@@ -120,7 +123,7 @@ export class OAuthService {
         state: string,
         sessionState: string,
         code: string,
-        provider: AuthProvider
+        provider: OAuthMethod
     ) {
         if (!this.cryptoService.validateState(state, sessionState)) {
             throw new ForbiddenException('Invalid state')
@@ -131,9 +134,8 @@ export class OAuthService {
             provider,
             tokenData.access_token
         )
-        const jwt = await this.authService.generateJwt(userInfo.id, provider)
-        const frontendUrl = this.configService.get<string>('app.frontEndURL')
+        const jwt = this.authService.generateUserJWT(userInfo.id, provider)
         const params = querystring.stringify({ jwt })
-        return `${frontendUrl}/callback?${params}`
+        return `${this.frontendUrl}/callback?${params}`
     }
 }
