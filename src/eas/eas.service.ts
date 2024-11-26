@@ -85,6 +85,7 @@ export class EasService {
             { name: 'key', value: params[0], type: 'bytes32' },
             { name: 'provider', value: params[1], type: 'string' },
             { name: 'secret', value: params[2], type: 'string' },
+            { name: 'metadata', value: params[3], type: 'string' },
         ])
     }
 
