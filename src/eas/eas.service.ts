@@ -155,6 +155,7 @@ export class EasService {
             key,
             anyJwtPayload.provider,
             secret,
+            {},
         ])
         const attestationPayload = this.buildAttestationPayload(
             chainId,
