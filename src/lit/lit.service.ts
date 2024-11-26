@@ -198,6 +198,12 @@ export class LitService {
             await this.connect()
         }
         try {
+            console.log(
+                'maaaaaa',
+                chainId,
+                ACCESS_MANAGER_CONTRACTS[chainId].metadata.hasRoleFunctionName,
+                ACCESS_MANAGER_CONTRACTS[chainId].metadata.HasRoleRoleId
+            )
             return await encryptToJson({
                 string: JSON.stringify(dataToEncrypt),
                 litNodeClient: this.litNodeClient,

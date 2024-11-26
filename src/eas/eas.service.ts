@@ -100,7 +100,7 @@ export class EasService {
         recipient: Address
     ) {
         return {
-            schema: CHAINS[chainId].metadata.schema,
+            schema: CHAINS[chainId].eas.schema,
             recipient,
             expirationTime: NO_EXPIRATION,
             revocable: true,
@@ -151,12 +151,13 @@ export class EasService {
             key,
             siweJwtPayload.sub as '0x${string}'
         )
+
         const eas = this.getContract(chainId)
         const encodedData = this.encodeAttestationData([
             key,
             anyJwtPayload.provider,
             secret,
-            {},
+            JSON.stringify({}, null, 0),
         ])
         const attestationPayload = this.buildAttestationPayload(
             chainId,
