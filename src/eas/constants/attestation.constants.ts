@@ -1,5 +1,3 @@
-import { parseAbiParameters } from 'viem'
-
 export const ATTEST_TYPED_SIGNATURE =
     'Attest(address attester,bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint256 nonce,uint64 deadline)'
 export const REVOKE_TYPED_SIGNATURE =
@@ -26,4 +24,5 @@ export const REVOKE_TYPE = [
     { name: 'nonce', type: 'uint256' },
     { name: 'deadline', type: 'uint64' },
 ]
-export const SCHEMA_TYPES = 'bytes32 key, string provider, string secret'
+export const SCHEMA_TYPES =
+    'bytes32 key, string provider, string secret, string metadata'

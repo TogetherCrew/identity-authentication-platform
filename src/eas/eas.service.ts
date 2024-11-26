@@ -7,11 +7,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { SCHEMA_TYPES } from './constants/attestation.constants'
-import {
-    EAS_CONTRACTS,
-    SUPPORTED_CHAINS,
-    CHAINS,
-} from '../shared/constants/chain.constants'
+import { SUPPORTED_CHAINS, CHAINS } from '../shared/constants/chain.constants'
 import { SupportedChainId } from '../shared/types/chain.type'
 import { Signer } from 'ethers'
 import { EthersUtilsService } from '../utils/ethers.utils.service'
@@ -32,7 +28,7 @@ import { privateKeyToAddress } from 'viem/accounts'
 import { SignDelegatedAttestationDto } from './dto/sign-delegated-attestation.dto'
 import { SignDelegatedRevocationDto } from './dto/sign-delegated-revocation.dto'
 import { DecryptAttestationSecretDto } from './dto/decrypt-attestation-secret.dto'
-import { keccak256, toHex } from 'viem'
+import { generateHash } from 'oci-js-sdk'
 
 @Injectable()
 export class EasService {
@@ -69,7 +65,7 @@ export class EasService {
 
     private setContracts(): void {
         for (const chainId of SUPPORTED_CHAINS) {
-            const eas = new EAS(EAS_CONTRACTS[chainId].address)
+            const eas = new EAS(CHAINS[chainId].eas.address)
             const attester = this.getAttester(chainId)
             eas.connect(attester)
             this.contracts.set(chainId, eas)
@@ -89,6 +85,7 @@ export class EasService {
             { name: 'key', value: params[0], type: 'bytes32' },
             { name: 'provider', value: params[1], type: 'string' },
             { name: 'secret', value: params[2], type: 'string' },
+            { name: 'metadata', value: params[3], type: 'string' },
         ])
     }
 
@@ -103,7 +100,7 @@ export class EasService {
         recipient: Address
     ) {
         return {
-            schema: EAS_CONTRACTS[chainId].metadata.schema,
+            schema: CHAINS[chainId].metadata.schema,
             recipient,
             expirationTime: NO_EXPIRATION,
             revocable: true,
@@ -144,19 +141,22 @@ export class EasService {
         const { chainId, anyJwt, siweJwt } = signDelegatedAttestationDto
         const siweJwtPayload = await this.authService.validateToken(siweJwt)
         const anyJwtPayload = await this.authService.validateToken(anyJwt)
+        const key = generateHash(anyJwtPayload.sub, anyJwtPayload.provider)
         const secret = await this.litService.encryptToJson(
             chainId,
             {
                 id: anyJwtPayload.sub,
                 provider: anyJwtPayload.provider,
             },
+            key,
             siweJwtPayload.sub as '0x${string}'
         )
         const eas = this.getContract(chainId)
         const encodedData = this.encodeAttestationData([
-            keccak256(toHex(anyJwtPayload.sub)),
+            key,
             anyJwtPayload.provider,
             secret,
+            {},
         ])
         const attestationPayload = this.buildAttestationPayload(
             chainId,
@@ -208,7 +208,7 @@ export class EasService {
             const signedDelegatedRevocation =
                 await delegated.signDelegatedRevocation(
                     {
-                        schema: EAS_CONTRACTS[chainId].metadata.schema,
+                        schema: CHAINS[chainId].eas.schema,
                         uid,
                         deadline: 0n,
                         value: 0n,
