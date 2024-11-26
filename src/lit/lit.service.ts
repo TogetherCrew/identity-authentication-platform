@@ -19,7 +19,7 @@ import {
 import { SupportedChainId, LitChain } from '../shared/types/chain.type'
 import { LIT_CHAINS } from '@lit-protocol/constants'
 import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
-import { Address, keccak256, toHex } from 'viem'
+import { Address } from 'viem'
 import { EthersUtilsService } from '../utils/ethers.utils.service'
 import { LitNetwork } from '@lit-protocol/constants'
 import {
@@ -65,6 +65,7 @@ export class LitService {
     }
     generateunifiedAccessControlConditions(
         chainId: SupportedChainId,
+        key: Address,
         userAddress: Address
     ): UnifiedAccessControlConditions {
         return [
@@ -87,7 +88,7 @@ export class LitService {
                 functionName:
                     PERMISSION_CONTRACTS[chainId].metadata
                         .hasPermissionFunctionName,
-                functionParams: [keccak256(toHex(userAddress)), ':userAddress'],
+                functionParams: [key, ':userAddress'],
                 functionAbi:
                     PERMISSION_CONTRACTS[chainId].metadata.hasPermissionAbi,
                 chain: this.chainIdToLitChainName(chainId),
@@ -190,6 +191,7 @@ export class LitService {
     async encryptToJson(
         chainId: SupportedChainId,
         dataToEncrypt: any,
+        key: Address,
         userAddress: Address
     ): Promise<string> {
         if (!this.litNodeClient) {
@@ -202,6 +204,7 @@ export class LitService {
                 unifiedAccessControlConditions:
                     this.generateunifiedAccessControlConditions(
                         chainId,
+                        key,
                         userAddress
                     ),
                 chain: this.chainIdToLitChainName(chainId),
