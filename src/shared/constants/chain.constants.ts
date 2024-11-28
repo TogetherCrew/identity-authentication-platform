@@ -1487,7 +1487,7 @@ export const ACCESS_MANAGER_CONTRACTS = {
                 stateMutability: 'view',
                 type: 'function',
             },
-            HasRoleRoleId: '3',
+            HasRoleRoleId: '2',
         },
     },
     11155420: {
@@ -2752,7 +2752,7 @@ export const ACCESS_MANAGER_CONTRACTS = {
                 stateMutability: 'view',
                 type: 'function',
             },
-            HasRoleRoleId: '3',
+            HasRoleRoleId: '2',
         },
     },
     84532: {
@@ -4017,7 +4017,7 @@ export const ACCESS_MANAGER_CONTRACTS = {
                 stateMutability: 'view',
                 type: 'function',
             },
-            HasRoleRoleId: '3',
+            HasRoleRoleId: '2',
         },
     },
 }
