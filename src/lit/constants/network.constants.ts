@@ -25,4 +25,16 @@ export const networks = {
         },
         rpc: LIT_RPC.CHRONICLE_YELLOWSTONE,
     },
+    datil: {
+        clientConfig: {
+            alertWhenUnauthorized: false,
+            litNetwork: LitNetwork.Datil,
+            debug: true,
+        },
+        contractConfig: {
+            network: LitNetwork.Datil,
+            debug: true,
+        },
+        rpc: LIT_RPC.CHRONICLE_YELLOWSTONE,
+    },
 }

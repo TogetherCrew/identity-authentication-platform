@@ -248,13 +248,6 @@ export class EasService {
         )
         const decodedData = this.decodeAttestationData(attestation.data)
         const secret = decodedData[2].value.value
-        console.log(
-            chainId,
-            attestation,
-            siweJwtPayload.sub,
-            decodedData,
-            secret
-        )
         return await this.litService.decryptFromJson(chainId, secret)
     }
 }
