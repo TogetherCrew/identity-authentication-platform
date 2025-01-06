@@ -1,6 +1,6 @@
 // config/discord.config.ts
-import * as Joi from 'joi'
-import { registerAs } from '@nestjs/config'
+import * as Joi from 'joi';
+import { registerAs } from '@nestjs/config';
 
 export default registerAs('discord', () => ({
     clientId: process.env.DISCORD_CLIENT_ID,
@@ -9,7 +9,7 @@ export default registerAs('discord', () => ({
     scopes: process.env.DISCORD_SCOPES
         ? process.env.DISCORD_SCOPES.split(' ')
         : ['identify'],
-}))
+}));
 
 export const discordConfigSchema = {
     DISCORD_CLIENT_ID: Joi.string().required().description('Discord client ID'),
@@ -23,4 +23,4 @@ export const discordConfigSchema = {
     DISCORD_SCOPES: Joi.string()
         .default('identify')
         .description('Discord OAuth scopes'),
-}
+};

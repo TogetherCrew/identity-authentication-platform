@@ -1,15 +1,18 @@
-import * as Joi from 'joi'
-import googleConfig, {
-    googleConfigSchema,
-} from '../auth-google/config/google.config'
+import * as Joi from 'joi';
+
 import discordConfig, {
     discordConfigSchema,
-} from '../auth-discord/config/auth-discord.config'
-import authConfig, { authConfigSchema } from '../auth/config/auth.config'
-import appConfig, { appConfigSchema } from './app.config'
-import loggerConfig, { loggerConfigSchema } from './logger.config'
-import walletConfig, { walletConfigSchema } from './wallet.config'
-import litConfig, { litConfigSchema } from '../lit/config/lit.config'
+} from '../auth-discord/config/auth-discord.config';
+import googleConfig, {
+    googleConfigSchema,
+} from '../auth-google/config/google.config';
+import authConfig, { authConfigSchema } from '../auth/config/auth.config';
+import jwtConfig, { jwtConfigSchema } from '../jwt/config/jwt.config';
+import litConfig, { litConfigSchema } from '../lit/config/lit.config';
+import appConfig, { appConfigSchema } from './app.config';
+import loggerConfig, { loggerConfigSchema } from './logger.config';
+import walletConfig, { walletConfigSchema } from './wallet.config';
+
 export const configModules = [
     appConfig,
     googleConfig,
@@ -18,7 +21,8 @@ export const configModules = [
     authConfig,
     walletConfig,
     litConfig,
-]
+    jwtConfig,
+];
 
 export const configValidationSchema = Joi.object({
     ...appConfigSchema,
@@ -30,4 +34,5 @@ export const configValidationSchema = Joi.object({
     ...loggerConfigSchema,
     ...walletConfigSchema,
     ...litConfigSchema,
-})
+    ...jwtConfigSchema,
+});

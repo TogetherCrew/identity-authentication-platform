@@ -1,4 +1,4 @@
-export const SUPPORTED_CHAINS = [11155111, 11155420, 84532, 42161] // Ethereum Sepolia - Optimism Sepolia - Base Sepolia - Arbitrum One
+export const SUPPORTED_CHAINS = [11155111, 11155420, 84532, 42161]; // Ethereum Sepolia - Optimism Sepolia - Base Sepolia - Arbitrum One
 
 export const CHAINS = {
     11155111: {
@@ -29,7 +29,7 @@ export const CHAINS = {
             schema: '0x6b5b50f2de8b387664838bd3c751e21f6b9aac7cf4bf5b2fb86e760b89a8a22d',
         },
     },
-}
+};
 
 export const PERMISSION_CONTRACTS = {
     11155111: {
@@ -633,7 +633,7 @@ export const PERMISSION_CONTRACTS = {
             },
         },
     },
-}
+};
 
 export const ACCESS_MANAGER_CONTRACTS = {
     11155111: {
@@ -5406,4 +5406,4 @@ export const ACCESS_MANAGER_CONTRACTS = {
             HasRoleRoleId: '2',
         },
     },
-}
+};

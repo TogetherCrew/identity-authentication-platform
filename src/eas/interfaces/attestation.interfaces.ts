@@ -1,34 +1,34 @@
-import { Address } from 'viem'
+import { Address } from 'viem';
 
 export interface IAttestationRequestData {
-    recipient: Address
-    data: Address
-    expirationTime: bigint
-    revocable: boolean
-    refUID: Address
-    value: bigint
+    recipient: Address;
+    data: Address;
+    expirationTime: bigint;
+    revocable: boolean;
+    refUID: Address;
+    value: bigint;
 }
 
 export interface IDelegatedAttestationMessage extends IAttestationRequestData {
-    schema: Address
-    attester: Address
-    deadline: bigint
-    nonce: bigint
+    schema: Address;
+    attester: Address;
+    deadline: bigint;
+    nonce: bigint;
 }
 
 export interface IAttestationRequest {
-    schema: Address
-    data: IAttestationRequestData
+    schema: Address;
+    data: IAttestationRequestData;
 }
 
 export interface IDelegatedAttestationRequest extends IAttestationRequest {
-    signature: { r: Address; s: Address; v: number }
-    attester: Address
-    deadline: bigint
+    signature: { r: Address; s: Address; v: number };
+    attester: Address;
+    deadline: bigint;
 }
 
 export interface TypedData {
-    name: string
+    name: string;
     type:
         | 'bool'
         | 'uint8'
@@ -40,5 +40,5 @@ export interface TypedData {
         | 'address'
         | 'string'
         | 'bytes'
-        | 'bytes32'
+        | 'bytes32';
 }

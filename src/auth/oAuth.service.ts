@@ -1,39 +1,41 @@
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import * as querystring from 'querystring';
+import { lastValueFrom } from 'rxjs';
+
+import { HttpService } from '@nestjs/axios';
 import {
-    Injectable,
     BadRequestException,
     ForbiddenException,
-} from '@nestjs/common'
-import { PinoLogger, InjectPinoLogger } from 'nestjs-pino'
-import { HttpService } from '@nestjs/axios'
-import { lastValueFrom } from 'rxjs'
-import { ConfigService } from '@nestjs/config'
-import * as querystring from 'querystring'
-import { OAUTH_URLS } from './constants/oAuth.constants'
-import { AuthService } from '../auth/auth.service'
-import { CryptoUtilsService } from '../utils/crypto-utils.service'
-import { AuthProvider } from './types/auth-provider.type'
+    Injectable,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { JwtService } from '../jwt/jwt.service';
+import { CryptoUtilsService } from '../utils/crypto-utils.service';
+import { OAUTH_URLS } from './constants/oAuth.constants';
+import { AuthProvider } from './types/auth-provider.type';
 
 @Injectable()
 export class OAuthService {
     constructor(
         private readonly httpService: HttpService,
         private readonly configService: ConfigService,
-        private readonly authService: AuthService,
+        private readonly jwtService: JwtService,
         private readonly cryptoService: CryptoUtilsService,
         @InjectPinoLogger(OAuthService.name)
         private readonly logger: PinoLogger
     ) {}
 
     getTokenUrl(provider: AuthProvider): string {
-        return OAUTH_URLS[provider].tokenUrl
+        return OAUTH_URLS[provider].tokenUrl;
     }
 
     getUserInfoUrl(provider: AuthProvider): string {
-        return OAUTH_URLS[provider].userInfoUrl
+        return OAUTH_URLS[provider].userInfoUrl;
     }
 
     getOAuthBaseURL(provider: AuthProvider): string {
-        return OAUTH_URLS[provider].authUrl
+        return OAUTH_URLS[provider].authUrl;
     }
 
     generateRedirectUrl(provider: AuthProvider, state: string): string {
@@ -45,23 +47,23 @@ export class OAuthService {
             response_type: 'code',
             scope: this.configService.get<string>(`${provider}.scopes`),
             state,
-        }
-        const baseUrl = this.getOAuthBaseURL(provider)
-        const queryParams = new URLSearchParams(params).toString()
-        return `${baseUrl}?${queryParams}`
+        };
+        const baseUrl = this.getOAuthBaseURL(provider);
+        const queryParams = new URLSearchParams(params).toString();
+        return `${baseUrl}?${queryParams}`;
     }
 
     async exchangeCodeForToken(
         provider: AuthProvider,
         code: string
     ): Promise<{ access_token: string }> {
-        const clientId = this.configService.get<string>(`${provider}.clientId`)
+        const clientId = this.configService.get<string>(`${provider}.clientId`);
         const clientSecret = this.configService.get<string>(
             `${provider}.clientSecret`
-        )
+        );
         const redirectUri = this.configService.get<string>(
             `${provider}.redirectUri`
-        )
+        );
 
         const params = new URLSearchParams({
             client_id: clientId,
@@ -69,9 +71,9 @@ export class OAuthService {
             grant_type: 'authorization_code',
             code,
             redirect_uri: redirectUri,
-        }).toString()
+        }).toString();
 
-        const tokenUrl = this.getTokenUrl(provider)
+        const tokenUrl = this.getTokenUrl(provider);
         try {
             const response = await lastValueFrom(
                 this.httpService.post(tokenUrl, params, {
@@ -79,16 +81,16 @@ export class OAuthService {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
                 })
-            )
-            return response.data
+            );
+            return response.data;
         } catch (error) {
             this.logger.error(
                 error,
                 `Failed to exchange ${provider} code for token`
-            )
+            );
             throw new BadRequestException(
                 `Failed to exchange ${provider} code for token`
-            )
+            );
         }
     }
 
@@ -96,23 +98,23 @@ export class OAuthService {
         provider: AuthProvider,
         accessToken: string
     ): Promise<any> {
-        const userInfoUrl = this.getUserInfoUrl(provider)
+        const userInfoUrl = this.getUserInfoUrl(provider);
 
         try {
             const response = await lastValueFrom(
                 this.httpService.get(userInfoUrl, {
                     headers: { Authorization: `Bearer ${accessToken}` },
                 })
-            )
-            return response.data
+            );
+            return response.data;
         } catch (error) {
             this.logger.error(
                 error,
                 `Failed to retrieve user information from ${provider}`
-            )
+            );
             throw new BadRequestException(
                 `Failed to retrieve user information from ${provider}`
-            )
+            );
         }
     }
 
@@ -123,17 +125,20 @@ export class OAuthService {
         provider: AuthProvider
     ) {
         if (!this.cryptoService.validateState(state, sessionState)) {
-            throw new ForbiddenException('Invalid state')
+            throw new ForbiddenException('Invalid state');
         }
-        const tokenData = await this.exchangeCodeForToken(provider, code)
+        const tokenData = await this.exchangeCodeForToken(provider, code);
 
         const userInfo = await this.getUserInfo(
             provider,
             tokenData.access_token
-        )
-        const jwt = await this.authService.generateJwt(userInfo.id, provider)
-        const frontendUrl = this.configService.get<string>('app.frontEndURL')
-        const params = querystring.stringify({ jwt })
-        return `${frontendUrl}/callback?${params}`
+        );
+        const jwt = await this.jwtService.generateAuthJwt(
+            userInfo.id,
+            provider
+        );
+        const frontendUrl = this.configService.get<string>('app.frontEndURL');
+        const params = querystring.stringify({ jwt });
+        return `${frontendUrl}/callback?${params}`;
     }
 }

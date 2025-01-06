@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class DataUtilsService {
     convertBigIntsToStrings = (obj: any): any => {
         if (typeof obj === 'bigint') {
-            return obj.toString()
+            return obj.toString();
         }
         if (Array.isArray(obj)) {
-            return obj.map(this.convertBigIntsToStrings)
+            return obj.map(this.convertBigIntsToStrings);
         }
         if (typeof obj === 'object' && obj !== null) {
             return Object.fromEntries(
@@ -15,17 +15,17 @@ export class DataUtilsService {
                     k,
                     this.convertBigIntsToStrings(v),
                 ])
-            )
+            );
         }
-        return obj
-    }
+        return obj;
+    };
 
     convertStringsToBigInts = (obj: any): any => {
         if (typeof obj === 'string' && /^[0-9]+$/.test(obj)) {
-            return BigInt(obj)
+            return BigInt(obj);
         }
         if (Array.isArray(obj)) {
-            return obj.map(this.convertStringsToBigInts)
+            return obj.map(this.convertStringsToBigInts);
         }
         if (typeof obj === 'object' && obj !== null) {
             return Object.fromEntries(
@@ -33,8 +33,8 @@ export class DataUtilsService {
                     k,
                     this.convertStringsToBigInts(v),
                 ])
-            )
+            );
         }
-        return obj
-    }
+        return obj;
+    };
 }
