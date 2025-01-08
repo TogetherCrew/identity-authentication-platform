@@ -3,14 +3,14 @@ import { UtilsModule } from 'src/utils/utils.module';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule as NestJwtModule } from '@nestjs/jwt';
 
-import { JwtModule as customJwtModule } from '../jwt/jwt.module';
+import { JwtModule } from '../jwt/jwt.module';
 import { OAuthService } from './oAuth.service';
 
 @Module({
     imports: [
-        JwtModule.registerAsync({
+        NestJwtModule.registerAsync({
             useFactory: async (configService: ConfigService) => ({
                 secret: configService.get<string>('jwt.secret'),
             }),
@@ -18,7 +18,7 @@ import { OAuthService } from './oAuth.service';
         }),
         HttpModule,
         UtilsModule,
-        customJwtModule,
+        JwtModule,
     ],
     providers: [OAuthService],
     exports: [OAuthService],

@@ -148,12 +148,17 @@ export class EasService {
         const anyJwtPayload = (await this.jwtService.validateToken(
             anyJwt
         )) as AuthJwtPayload;
-        const key = generateHash(anyJwtPayload.sub, anyJwtPayload.provider);
+        const key = generateHash(
+            anyJwtPayload.sub,
+            anyJwtPayload.provider,
+            anyJwtPayload.metadata || {}
+        );
         const secret = await this.litService.encryptToJson(
             chainId,
             {
                 id: anyJwtPayload.sub,
                 provider: anyJwtPayload.provider,
+                metadata: anyJwtPayload.metadata || {},
             },
             key,
             siweJwtPayload.sub as '0x${string}'

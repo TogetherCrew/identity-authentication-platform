@@ -6,9 +6,9 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { JwtService } from '../jwt/jwt.service';
 import { CryptoUtilsService } from '../utils/crypto-utils.service';
 import { AUTH_PROVIDERS } from './constants/provider.constants';
-import { AuthService } from './jwt.service';
 import { OAuthService } from './oAuth.service';
 
 describe('OAuthService', () => {
@@ -47,8 +47,8 @@ describe('OAuthService', () => {
         }),
     };
 
-    const mockAuthService = {
-        generateJwt: jest.fn().mockResolvedValue('mock-jwt'),
+    const mockJwtService = {
+        generateAuthJwt: jest.fn().mockResolvedValue('mock-jwt'),
     };
 
     const mockCryptoService = {
@@ -60,7 +60,7 @@ describe('OAuthService', () => {
             imports: [LoggerModule.forRoot()],
             providers: [
                 OAuthService,
-                { provide: AuthService, useValue: mockAuthService },
+                { provide: JwtService, useValue: mockJwtService },
                 { provide: HttpService, useValue: mockHttpService },
                 { provide: ConfigService, useValue: mockConfigService },
                 { provide: CryptoUtilsService, useValue: mockCryptoService },
@@ -124,7 +124,7 @@ describe('OAuthService', () => {
                 'mock-state',
                 'mock-state'
             );
-            expect(mockAuthService.generateJwt).toHaveBeenCalledWith(
+            expect(mockJwtService.generateAuthJwt).toHaveBeenCalledWith(
                 'user-id',
                 AUTH_PROVIDERS.GOOGLE
             );

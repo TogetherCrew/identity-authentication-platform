@@ -10,7 +10,7 @@ export interface VerificationJwtPayload extends BaseJwtPayload {
 }
 
 export interface AuthJwtPayload extends BaseJwtPayload {
-    provider?: string;
+    provider: string;
     metadata?: Record<string, any>;
 }
 

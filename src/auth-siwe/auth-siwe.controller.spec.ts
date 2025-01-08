@@ -3,7 +3,7 @@ import { parseSiweMessage } from 'viem/siwe';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { AUTH_PROVIDERS } from '../auth/constants/provider.constants';
-import { AuthService } from '../auth/jwt.service';
+import { JwtService } from '../jwt/jwt.service';
 import { AuthSiweController } from './auth-siwe.controller';
 import { VerifySiweDto } from './dto/verify-siwe.dto';
 import { SiweService } from './siwe.service';
@@ -15,7 +15,7 @@ jest.mock('viem/siwe', () => ({
 describe('AuthSiweController', () => {
     let controller: AuthSiweController;
     let siweService: SiweService;
-    let authService: AuthService;
+    let jwtService: JwtService;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -29,9 +29,9 @@ describe('AuthSiweController', () => {
                     },
                 },
                 {
-                    provide: AuthService,
+                    provide: JwtService,
                     useValue: {
-                        generateJwt: jest.fn(),
+                        generateAuthJwt: jest.fn(),
                     },
                 },
             ],
@@ -39,7 +39,7 @@ describe('AuthSiweController', () => {
 
         controller = module.get<AuthSiweController>(AuthSiweController);
         siweService = module.get<SiweService>(SiweService);
-        authService = module.get<AuthService>(AuthService);
+        jwtService = module.get<JwtService>(JwtService);
     });
 
     it('should be defined', () => {
@@ -68,7 +68,7 @@ describe('AuthSiweController', () => {
             jest.spyOn(siweService, 'verifySiweMessage').mockResolvedValue(
                 undefined
             );
-            jest.spyOn(authService, 'generateJwt').mockResolvedValue(jwt);
+            jest.spyOn(jwtService, 'generateAuthJwt').mockResolvedValue(jwt);
             (parseSiweMessage as jest.Mock).mockReturnValue({ address });
 
             const result = await controller.verifySiwe(verifySiweDto);
@@ -79,7 +79,7 @@ describe('AuthSiweController', () => {
                 verifySiweDto.signature,
                 verifySiweDto.chainId
             );
-            expect(authService.generateJwt).toHaveBeenCalledWith(
+            expect(jwtService.generateAuthJwt).toHaveBeenCalledWith(
                 address,
                 AUTH_PROVIDERS.SIWE
             );

@@ -1,5 +1,3 @@
-// src/jwt/jwt.service.ts
-
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';

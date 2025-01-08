@@ -10,6 +10,7 @@ import { pinoConfig } from './config/pino.config';
 import { LitModule } from './lit/lit.module';
 import { EasModule } from './eas/eas.module';
 import { JwtModule } from './jwt/jwt.module';
+import { DiscourseVerificationModule } from './discourse-verification/discourse-verification.module';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { JwtModule } from './jwt/jwt.module';
         LitModule,
         EasModule,
         JwtModule,
+        DiscourseVerificationModule,
     ],
     controllers: [],
     providers: [],

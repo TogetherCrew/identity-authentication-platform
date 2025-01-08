@@ -6,7 +6,7 @@ import { generatePrivateKey } from 'viem/accounts';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { AuthService } from '../auth/jwt.service';
+import { JwtService } from '../jwt/jwt.service';
 import { LitService } from '../lit/lit.service';
 import { DataUtilsService } from '../utils/data-utils.service';
 import { EthersUtilsService } from '../utils/ethers.utils.service';
@@ -30,7 +30,7 @@ describe('EasService', () => {
             providers: [
                 EasService,
                 EthersUtilsService,
-                AuthService,
+                JwtService,
                 LitService,
                 DataUtilsService,
                 { provide: ConfigService, useValue: mockConfigService },
