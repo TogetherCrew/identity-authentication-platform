@@ -15,7 +15,7 @@ export class VerifyDto {
     @ApiProperty({
         description: 'The verification JWT.',
         example:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkxasewrOiIxMjM0NTY3ODkwIiwibmFtZSI6',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6',
         required: true,
     })
     @IsString()

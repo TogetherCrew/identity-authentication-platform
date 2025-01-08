@@ -5,7 +5,7 @@ export class GenerateVerificationTokenResponseDto {
         description:
             'Generated verification JWT token to embed in a Discourse topic',
         example:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2RlIjoiMjMxMjQ... (truncated)',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6',
     })
     verificationJwt: string;
 }
