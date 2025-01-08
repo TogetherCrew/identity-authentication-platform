@@ -1,5 +1,5 @@
-import { registerAs } from '@nestjs/config'
-import * as Joi from 'joi'
+import { registerAs } from '@nestjs/config';
+import * as Joi from 'joi';
 
 export default registerAs('google', () => ({
     clientId: process.env.GOOGLE_CLIENT_ID,
@@ -8,7 +8,7 @@ export default registerAs('google', () => ({
     scopes: process.env.GOOGLE_SCOPES
         ? process.env.GOOGLE_SCOPES.split(' ')
         : ['identify'],
-}))
+}));
 
 export const googleConfigSchema = {
     GOOGLE_CLIENT_ID: Joi.string().required().description('Google clinet id'),
@@ -22,4 +22,4 @@ export const googleConfigSchema = {
     GOOGLE_SCOPES: Joi.string()
         .default('profile')
         .description('Google OAuth scopes'),
-}
+};

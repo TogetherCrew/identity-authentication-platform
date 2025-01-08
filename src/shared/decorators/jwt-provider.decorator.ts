@@ -2,8 +2,8 @@ import {
     registerDecorator,
     ValidationOptions,
     ValidationArguments,
-} from 'class-validator'
-import { decode } from 'jsonwebtoken'
+} from 'class-validator';
+import { decode } from 'jsonwebtoken';
 
 export function JwtProvider(
     expectedProvider: string,
@@ -18,19 +18,19 @@ export function JwtProvider(
             validator: {
                 validate(value: any) {
                     try {
-                        const decoded = decode(value)
+                        const decoded = decode(value);
                         if (decoded['provider'] === expectedProvider) {
-                            return true
+                            return true;
                         }
-                        return false
+                        return false;
                     } catch (error) {
-                        return false
+                        return false;
                     }
                 },
                 defaultMessage(args: ValidationArguments) {
-                    return `${args.property} provider must be ${expectedProvider}.`
+                    return `${args.property} provider must be ${expectedProvider}.`;
                 },
             },
-        })
-    }
+        });
+    };
 }

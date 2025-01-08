@@ -5,13 +5,13 @@ import {
     HttpStatus,
     HttpCode,
     Param,
-} from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { SignDelegatedAttestationDto } from './dto/sign-delegated-attestation.dto'
-import { SignDelegatedRevocationDto } from './dto/sign-delegated-revocation.dto'
-import { DecryptAttestationSecretDto } from './dto/decrypt-attestation-secret.dto'
-import { EasService } from '../eas/eas.service'
-import { ApiParam } from '@nestjs/swagger'
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { SignDelegatedAttestationDto } from './dto/sign-delegated-attestation.dto';
+import { SignDelegatedRevocationDto } from './dto/sign-delegated-revocation.dto';
+import { DecryptAttestationSecretDto } from './dto/decrypt-attestation-secret.dto';
+import { EasService } from '../eas/eas.service';
+import { ApiParam } from '@nestjs/swagger';
 
 @ApiTags(`Eas`)
 @Controller(`eas`)
@@ -30,7 +30,7 @@ export class EasController {
     ) {
         return await this.easService.getSignedDelegatedAttestation(
             signDelegatedAttestationDto
-        )
+        );
     }
 
     @Post(':uid/sign-delegated-revocation')
@@ -50,7 +50,7 @@ export class EasController {
         return await this.easService.getSignedDelegatedRevocation(
             signDelegatedRevocationDto,
             uid
-        )
+        );
     }
 
     @Post(':uid/decrypt-attestation-secret')
@@ -70,6 +70,6 @@ export class EasController {
         return await this.easService.decryptAttestationSecret(
             decryptAttestationSecretDto,
             uid
-        )
+        );
     }
 }

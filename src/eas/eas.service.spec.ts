@@ -1,25 +1,28 @@
-import { Test, TestingModule } from '@nestjs/testing'
-import { EasService } from './eas.service'
-import { ConfigService } from '@nestjs/config'
-import { generatePrivateKey } from 'viem/accounts'
 // import { EAS_SEPOLIA_CONTRACT_ADDRESS } from './constants/sepolia'
 // import { sepolia } from 'viem/chains'
-import { PinoLogger, LoggerModule } from 'nestjs-pino'
-import { EthersUtilsService } from '../utils/ethers.utils.service'
-import { AuthService } from '../auth/auth.service'
-import { LitService } from '../lit/lit.service'
-import { DataUtilsService } from '../utils/data-utils.service'
-const mockPrivateKey = generatePrivateKey()
+import { LoggerModule, PinoLogger } from 'nestjs-pino';
+import { generatePrivateKey } from 'viem/accounts';
+
+import { ConfigService } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
+
+import { JwtService } from '../jwt/jwt.service';
+import { LitService } from '../lit/lit.service';
+import { DataUtilsService } from '../utils/data-utils.service';
+import { EthersUtilsService } from '../utils/ethers.utils.service';
+import { EasService } from './eas.service';
+
+const mockPrivateKey = generatePrivateKey();
 
 const mockConfigService = {
     get: jest.fn((key: string) => {
-        if (key === 'wallet.privateKey') return mockPrivateKey
+        if (key === 'wallet.privateKey') return mockPrivateKey;
     }),
-}
+};
 
 describe('EasService', () => {
-    let service: EasService
-    let loggerMock: PinoLogger
+    let service: EasService;
+    let loggerMock: PinoLogger;
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -27,20 +30,20 @@ describe('EasService', () => {
             providers: [
                 EasService,
                 EthersUtilsService,
-                AuthService,
+                JwtService,
                 LitService,
                 DataUtilsService,
                 { provide: ConfigService, useValue: mockConfigService },
                 { provide: PinoLogger, useValue: loggerMock },
             ],
-        }).compile()
+        }).compile();
 
-        service = module.get<EasService>(EasService)
-    })
+        service = module.get<EasService>(EasService);
+    });
 
     it('should be defined', () => {
-        expect(service).toBeDefined()
-    })
+        expect(service).toBeDefined();
+    });
 
     // it('should have a eas contract', () => {
     //     expect(service.eas).toBeDefined()
@@ -60,4 +63,4 @@ describe('EasService', () => {
 
     //     expect(await service.getDomain()).toEqual(expected)
     // })
-})
+});

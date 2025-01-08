@@ -1,24 +1,26 @@
 import {
     Controller,
     Get,
+    HttpStatus,
     Query,
     Redirect,
-    HttpStatus,
     Session,
-} from '@nestjs/common'
+} from '@nestjs/common';
 import {
-    ApiTags,
-    ApiOperation,
     ApiFoundResponse,
     ApiOkResponse,
-} from '@nestjs/swagger'
-import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto'
-import { JwtResponse } from '../auth/dto/jwt-response.dto'
-import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
-import { CryptoUtilsService } from '../utils/crypto-utils.service'
-import { OAuthService } from '../auth/oAuth.service'
-@ApiTags(`${AUTH_PROVIDERS.GOOGLE} Authentication`)
-@Controller(`auth/${AUTH_PROVIDERS.GOOGLE}`)
+    ApiOperation,
+    ApiTags,
+} from '@nestjs/swagger';
+
+import { AUTH_PROVIDERS } from '../auth/constants/provider.constants';
+import { JwtResponse } from '../auth/dto/jwt-response.dto';
+import { OAuthService } from '../auth/oAuth.service';
+import { CryptoUtilsService } from '../utils/crypto-utils.service';
+import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto';
+
+@ApiTags('Google Authentication')
+@Controller('auth/google')
 export class AuthGoogleController {
     constructor(
         private readonly oAuthService: OAuthService,
@@ -30,13 +32,13 @@ export class AuthGoogleController {
     @ApiOperation({ summary: 'Redirect to Google OAuth' })
     @ApiFoundResponse({ description: 'Redirection to Google OAuth.' })
     redirectToGoogle(@Session() session: any) {
-        const state = this.cryptoService.generateState()
+        const state = this.cryptoService.generateState();
         const url = this.oAuthService.generateRedirectUrl(
             AUTH_PROVIDERS.GOOGLE,
             state
-        )
-        session.state = state
-        return { url, statusCode: HttpStatus.FOUND }
+        );
+        session.state = state;
+        return { url, statusCode: HttpStatus.FOUND };
     }
 
     @Get('authenticate/callback')
@@ -55,11 +57,11 @@ export class AuthGoogleController {
             session.state,
             code,
             AUTH_PROVIDERS.GOOGLE
-        )
+        );
 
         return {
             url: redirectUrl,
             statusCode: HttpStatus.FOUND,
-        }
+        };
     }
 }

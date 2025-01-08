@@ -1,5 +1,5 @@
 // src/utils/encode-utils.service.ts
-import { Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class EncodeUtilsService {
@@ -8,6 +8,6 @@ export class EncodeUtilsService {
             .toString('base64')
             .replace(/\+/g, '-')
             .replace(/\//g, '_')
-            .replace(/=+$/, '')
+            .replace(/=+$/, '');
     }
 }

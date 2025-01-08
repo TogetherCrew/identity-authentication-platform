@@ -1,7 +1,7 @@
-import { ConfigService } from '@nestjs/config'
+import { ConfigService } from '@nestjs/config';
 export const pinoConfig = (configService: ConfigService) => {
-    const nodeEnv = configService.get('app.nodeEnv')
-    const logLevel = configService.get('logger.level')
+    const nodeEnv = configService.get('app.nodeEnv');
+    const logLevel = configService.get('logger.level');
 
     return {
         pinoHttp: {
@@ -17,11 +17,11 @@ export const pinoConfig = (configService: ConfigService) => {
                     : undefined,
             formatters: {
                 level: (label) => {
-                    return { level: label.toUpperCase() }
+                    return { level: label.toUpperCase() };
                 },
             },
             timestamp: () =>
                 `,"timestamp":"${new Date(Date.now()).toISOString()}"`,
         },
-    }
-}
+    };
+};

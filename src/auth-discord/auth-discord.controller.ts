@@ -1,25 +1,26 @@
 import {
     Controller,
     Get,
+    HttpStatus,
     Query,
     Redirect,
-    HttpStatus,
     Session,
-} from '@nestjs/common'
+} from '@nestjs/common';
 import {
-    ApiTags,
-    ApiOperation,
     ApiFoundResponse,
     ApiOkResponse,
-} from '@nestjs/swagger'
-import { OAuthService } from '../auth/oAuth.service'
-import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto'
-import { CryptoUtilsService } from '../utils/crypto-utils.service'
-import { AUTH_PROVIDERS } from '../auth/constants/provider.constants'
-import { JwtResponse } from '../auth//dto/jwt-response.dto'
+    ApiOperation,
+    ApiTags,
+} from '@nestjs/swagger';
 
-@ApiTags(`${AUTH_PROVIDERS.DISCORD} Authentication`)
-@Controller(`auth/${AUTH_PROVIDERS.DISCORD}`)
+import { AUTH_PROVIDERS } from '../auth/constants/provider.constants';
+import { JwtResponse } from '../auth/dto/jwt-response.dto';
+import { OAuthService } from '../auth/oAuth.service';
+import { CryptoUtilsService } from '../utils/crypto-utils.service';
+import { HandleOAuthCallback } from './dto/handle-oauth-callback-dto';
+
+@ApiTags('Discord Authentication')
+@Controller('auth/discord')
 export class AuthDiscordController {
     constructor(
         private readonly oAuthService: OAuthService,
@@ -31,13 +32,13 @@ export class AuthDiscordController {
     @ApiOperation({ summary: 'Redirect to Discord OAuth' })
     @ApiFoundResponse({ description: 'Redirection to Discord OAuth.' })
     redirectToDiscord(@Session() session: any) {
-        const state = this.cryptoService.generateState()
+        const state = this.cryptoService.generateState();
         const url = this.oAuthService.generateRedirectUrl(
             AUTH_PROVIDERS.DISCORD,
             state
-        )
-        session.state = state
-        return { url, statusCode: HttpStatus.FOUND }
+        );
+        session.state = state;
+        return { url, statusCode: HttpStatus.FOUND };
     }
 
     @Get('authenticate/callback')
@@ -56,10 +57,10 @@ export class AuthDiscordController {
             session.state,
             code,
             AUTH_PROVIDERS.DISCORD
-        )
+        );
         return {
             url: redirectUrl,
             statusCode: HttpStatus.FOUND,
-        }
+        };
     }
 }

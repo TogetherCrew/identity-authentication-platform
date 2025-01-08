@@ -1,9 +1,9 @@
-import { Abi } from 'viem'
+import { Abi } from 'viem';
 export const SCHEMA_UUID =
-    '0x85e90e3e16d319578888790af3284fea8bca549305071531e7478e3e0b5e7d6d'
+    '0x85e90e3e16d319578888790af3284fea8bca549305071531e7478e3e0b5e7d6d';
 
 export const EAS_SEPOLIA_CONTRACT_ADDRESS =
-    '0xC2679fBD37d54388Ce493F1DB75320D236e1815e'
+    '0xC2679fBD37d54388Ce493F1DB75320D236e1815e';
 export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
     {
         inputs: [
@@ -763,4 +763,4 @@ export const EAS_SEPOLIA_CONTRACT_ABI: Abi = [
         stateMutability: 'nonpayable',
         type: 'function',
     },
-]
+];

@@ -1,11 +1,13 @@
-import { Module } from '@nestjs/common'
-import { EasService } from './eas.service'
-import { UtilsModule } from '../utils/utils.module'
-import { EasController } from './eas.controller'
-import { AuthModule } from '../auth/auth.module'
-import { LitModule } from '../lit/lit.module'
+import { Module } from '@nestjs/common';
+
+import { JwtModule } from '../jwt/jwt.module';
+import { LitModule } from '../lit/lit.module';
+import { UtilsModule } from '../utils/utils.module';
+import { EasController } from './eas.controller';
+import { EasService } from './eas.service';
+
 @Module({
-    imports: [AuthModule, UtilsModule, LitModule],
+    imports: [JwtModule, UtilsModule, LitModule],
     providers: [EasService],
     controllers: [EasController],
     exports: [EasService],

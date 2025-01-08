@@ -1,14 +1,16 @@
-import { Module } from '@nestjs/common'
-import { JwtModule } from '@nestjs/jwt'
-import { AuthService } from './auth.service'
-import { OAuthService } from './oAuth.service'
-import { HttpModule } from '@nestjs/axios'
-import { ConfigService } from '@nestjs/config'
-import { UtilsModule } from 'src/utils/utils.module'
+import { UtilsModule } from 'src/utils/utils.module';
+
+import { HttpModule } from '@nestjs/axios';
+import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtModule as NestJwtModule } from '@nestjs/jwt';
+
+import { JwtModule } from '../jwt/jwt.module';
+import { OAuthService } from './oAuth.service';
 
 @Module({
     imports: [
-        JwtModule.registerAsync({
+        NestJwtModule.registerAsync({
             useFactory: async (configService: ConfigService) => ({
                 secret: configService.get<string>('jwt.secret'),
             }),
@@ -16,8 +18,9 @@ import { UtilsModule } from 'src/utils/utils.module'
         }),
         HttpModule,
         UtilsModule,
+        JwtModule,
     ],
-    providers: [AuthService, OAuthService],
-    exports: [AuthService, OAuthService],
+    providers: [OAuthService],
+    exports: [OAuthService],
 })
 export class AuthModule {}

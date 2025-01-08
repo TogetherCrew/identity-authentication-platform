@@ -1,4 +1,4 @@
-import { LitNetwork, LIT_RPC } from '@lit-protocol/constants'
+import { LitNetwork, LIT_RPC } from '@lit-protocol/constants';
 
 export const networks = {
     'datil-dev': {
@@ -37,4 +37,4 @@ export const networks = {
         },
         rpc: LIT_RPC.CHRONICLE_YELLOWSTONE,
     },
-}
+};

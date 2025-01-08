@@ -9,4 +9,4 @@ export const OAUTH_URLS = {
         tokenUrl: 'https://discord.com/api/oauth2/token',
         userInfoUrl: 'https://discord.com/api/users/@me',
     },
-}
+};
