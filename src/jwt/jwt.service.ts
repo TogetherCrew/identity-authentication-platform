@@ -36,7 +36,7 @@ export class JwtService {
             ) as JwtPayload;
         } catch (error) {
             this.logger.error(error, 'Failed to validate token');
-            throw new UnauthorizedException(error.message);
+            throw new UnauthorizedException('Invalid token');
         }
     }
 
