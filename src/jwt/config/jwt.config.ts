@@ -12,9 +12,9 @@ export default registerAs('jwt', () => ({
 export const jwtConfigSchema = {
     JWT_SECRET: Joi.string().required().description('JWT secret'),
     JWT_AUTH_EXPIRATION_MINUTES: Joi.number()
-        .default(6000)
+        .default(60)
         .description('JWT expiration time in minutes for the auth'),
     JWT_VERIFICATION_MINUTES: Joi.number()
-        .default(1000)
+        .default(10)
         .description('JWT expiration time in minutes for the verification'),
 };
