@@ -1,7 +1,6 @@
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
-import { JwtProvider } from '../../shared/decorators/jwt-provider.decorator';
-import { AUTH_PROVIDERS } from '../../auth/constants/provider.constants';
 
 export class DecryptAttestationSecretDto {
     @ApiProperty({
@@ -12,7 +11,9 @@ export class DecryptAttestationSecretDto {
     })
     @IsString()
     @IsNotEmpty()
-    @JwtProvider(AUTH_PROVIDERS.SIWE)
+    @IsString()
+
+    // @JwtProvider(AUTH_PROVIDERS.SIWE)
     readonly siweJwt: string;
     @ApiProperty({
         description: 'Chain Id',

@@ -1,7 +1,6 @@
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
-import { JwtProvider } from '../../shared/decorators/jwt-provider.decorator';
-import { AUTH_PROVIDERS } from '../../auth/constants/provider.constants';
 
 export class SignDelegatedRevocationDto {
     @ApiProperty({
@@ -12,7 +11,7 @@ export class SignDelegatedRevocationDto {
     })
     @IsString()
     @IsNotEmpty()
-    @JwtProvider(AUTH_PROVIDERS.SIWE)
+    @IsString()
     readonly siweJwt: string;
     @ApiProperty({
         description: 'Chain Id',
