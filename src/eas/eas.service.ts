@@ -169,7 +169,7 @@ export class EasService {
             key,
             anyJwtPayload.provider,
             secret,
-            JSON.stringify({}, null, 0),
+            JSON.stringify(anyJwtPayload.metadata || {}, null, 0),
         ]);
         const attestationPayload = this.buildAttestationPayload(
             chainId,
